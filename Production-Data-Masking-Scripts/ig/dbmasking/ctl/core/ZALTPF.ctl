@@ -1,0 +1,56 @@
+OPTIONS (DIRECT=TRUE)
+UNRECOVERABLE
+LOAD DATA
+REPLACE
+INTO TABLE VM1DTA.ZALTPF
+FIELDS TERMINATED BY "," ENCLOSED BY '"'
+TRAILING NULLCOLS
+(
+UNIQUE_NUMBER	,
+CHDRNUM          ,
+TRANNO           ,
+ALTQUOTENO       ,
+ZINTQUOT         ,
+COWNNUM          ,
+ZCMPCODE         ,
+ZCPNSCDE         ,
+ZPCPNCDE         ,
+ZCONVINDPOL      ,
+ZSALECHNL        ,
+ZSOLCTFLG        ,
+CLTRELN          ,
+ZPLANCDE         ,
+CRDTCARD         ,
+BNKACCKEY01      ,
+BNKACCKEY02      ,
+ZENSPCD01        ,
+ZENSPCD02        ,
+ZCIFCODE         ,
+ZKANASNM         ,
+ZKANAGNM         ,
+KANJISURNAME     ,
+KANJIGIVNAME     ,
+ZRCORADR         ,
+CLTPCODE         ,
+KANJICLTADDR01   ,
+KANJICLTADDR02   ,
+KANJICLTADDR03   ,
+KANJICLTADDR04   ,
+ZKANADDR01       ,
+ZKANADDR02       ,
+ZKANADDR03       ,
+ZKANADDR04       ,
+CLTPHONE01       ,
+CHGFLAG          ,
+DCLDATE          ,
+ZDCLITEM01       ,
+ZDCLITEM02       ,
+USRPRF           ,
+JOBNM            ,
+DATIME           ,
+ZDECLCAT         ,
+ZPGPFRDT         ,
+ZPGPTODT         ,
+ZWORKPLCE1       ,
+ZWORKPLCE2
+)

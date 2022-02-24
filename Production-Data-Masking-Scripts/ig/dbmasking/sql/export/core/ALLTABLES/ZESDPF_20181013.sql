@@ -1,0 +1,4 @@
+set pagesize 0 trimspool on linesize 32700 underline off term off feed off
+spool /opt/ig/hitoku/user/input/ALLTABLEDATA/ZESDPF_20181013.sql;
+select /*+ paralle(10) */'"'||ZVALDDDT||'","'||ZVALDRDT||'","'||ZACMCLDT||'","'||ZBILDDDT||'","'||ZBKTRFDT||'","'||ZBILDTDT||'","'||ZPOSBDSY||'","'||ZPOSBDSM||'","'||ZBSTCSDT01||'","'||ZBSTPJDT01||'","'||ZBSTSYIM01||'","'||ZBSTCSDT02||'","'||ZBSTPJDT02||'","'||ZBSTCSDT03||'","'||ZBSTPJDT03||'","'||ZBSTSYIM02||'","'||ZPOLDDDT||'","'||ZTEMIRDT||'","'||ZFNLIRDT||'","'||ZVLCHKFL||'","'||USRPRF||'","'||JOBNM||'","'||DATIME||'","'||ZENDSCID||'","'||ZSCHYEAR||'","'||ZSCHMONTH||'","'||ZANNCLDTNB||'","'||ZINTRNDT01||'","'||ZCOVCMDT||'","'||ZANNCLDTCA||'","'||ZSLSTRNF||'","'||ZCMPENDT||'","'||ZANNCLDTBAC||'","'||ZALTRNDTBAC||'","'||ZANNCLDTAL||'","'||ZLTRPADT||'","'||ZINTRNDT02||'","'||ZALTRNDTAL||'"' from  VM1DTA.ZESDPF_20181013;
+spool off;

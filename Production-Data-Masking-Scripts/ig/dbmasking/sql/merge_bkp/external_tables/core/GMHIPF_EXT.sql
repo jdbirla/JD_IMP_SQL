@@ -1,0 +1,38 @@
+CREATE TABLE "GMHIPF_EXT" 
+(
+        "UNIQUE_NUMBER"	NUMBER(18,0),
+		"ZWORKPLCE1"	VARCHAR2(25 CHAR),
+		"ZWORKPLCE2"	VARCHAR2(25 CHAR)
+
+                                           
+)
+ORGANIZATION external 
+(
+  TYPE oracle_loader
+  DEFAULT DIRECTORY EXT_DATA_DIR
+  ACCESS PARAMETERS 
+  (
+    RECORDS DELIMITED BY NEWLINE CHARACTERSET JA16SJISTILDE
+    BADFILE 'EXT_DATA_DIR':'GMHIPF_EXT.bad'
+    LOGFILE 'GMHIPF_EXT.log_xt'
+    READSIZE 1048576
+    FIELDS TERMINATED BY ","  
+    REJECT ROWS WITH ALL NULL FIELDS 
+    (
+		
+		
+			"UNIQUE_NUMBER"	CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		    "ZWORKPLCE1"	CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+	        "ZWORKPLCE2"	CHAR(255)   TERMINATED BY "," ENCLOSED BY '"'
+ )
+  )
+  location 
+  (
+    '/opt/ig/hitoku/user/output/outputGMHIPF.csv'
+  )
+)REJECT LIMIT UNLIMITED;
+/
+
+--drop table GMHIPF_EXT;
+
+--select * from GMHIPF_EXT; 

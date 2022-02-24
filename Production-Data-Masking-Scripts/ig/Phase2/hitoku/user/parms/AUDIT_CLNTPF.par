@@ -1,0 +1,176 @@
+#OLDSURNAME Last Name kana
+1,2
+
+#OLDGIVNAME First name Kana
+1,3
+
+#OLDCLTPHONE01 Phone number
+8,4
+
+#OLDCLTPHONE02 Phone number
+8,5
+
+#OLDFAXNO Phone number
+8,6
+
+#OLDLGIVNAME Last Name kanji
+4,7
+
+#OLDKANJISURNAME Last Name kanji
+4,8
+
+#OLDKANJIGIVNAME First name Kanji
+1,9
+
+#OLDKANJICLTADDR01 Address Kanji
+2,10
+
+#OLDKANJICLTADDR02 Address Kanji
+2,11
+
+#OLDKANJICLTADDR03 Address Kanji
+2,12
+
+#OLDKANJICLTADDR04 Address Kanji
+2,13
+
+#OLDKANJICLTADDR05 Address Kanji
+2,14
+
+#OLDZKANASNM Last Name kana
+1,15
+
+#OLDZKANAGNM First name Kana
+1,16
+
+#OLDZKANADDR01 Address Kana
+2,17
+
+#OLDZKANADDR02 Address Kana
+2,18
+
+#OLDZKANADDR03 Address Kana
+2,19
+
+#OLDZKANADDR04 Address Kana
+2,20
+
+#OLDZKANADDR05 Address Kana
+2,21
+
+#OLDZADDRCD Address Kana
+2,22
+
+#OLDZKANASNMNOR Last Name kana
+1,23
+
+#OLDZKANAGNMNOR First name Kana
+1,24
+
+#NEWSURNAME Last Name kana
+1,25
+
+#NEWGIVNAME First name Kana
+1,26
+
+#NEWCLTPHONE01 Phone number
+8,27
+
+#NEWCLTPHONE02 Phone number
+8,28
+
+#NEWFAXNO Phone number
+8,29
+
+#NEWLSURNAME Last Name kanji
+4,30
+
+#NEWLGIVNAME First name Kanji
+1,31
+
+#NEWKANJISURNAME Last Name kana
+1,32
+
+#NEWKANJIGIVNAME First name Kanji
+1,33
+
+#NEWKANJICLTADDR01 Address Kanji
+2,34
+
+#NEWKANJICLTADDR02 Address Kanji
+2,35
+
+#NEWKANJICLTADDR03 Address Kanji
+2,36
+
+#NEWKANJICLTADDR04 Address Kanji
+2,37
+
+#NEWKANJICLTADDR05 Address Kanji
+2,38
+
+#NEWZKANASNM Last Name kana
+1,39
+
+#NEWZKANAGNM First name Kana
+1,40
+
+#NEWZKANADDR01 Address Kana
+2,41
+
+#NEWZKANADDR02 Address Kana
+2,42
+
+#NEWZKANADDR03 Address Kana
+2,43
+
+#NEWZKANADDR04 Address Kana
+2,44
+
+#NEWZKANADDR05 Address Kana
+2,45
+
+#NEWZADDRCD Address Kana
+2,46
+
+#NEWZKANASNMNOR Last Name kana
+1,47
+
+#NEWZKANAGNMNOR First name Kana
+1,48
+
+#NEWCLTADDR01
+2,49
+
+#NEWCLTADDR02
+2,50
+
+#NEWCLTADDR03
+2,51
+
+#NEWCLTADDR04
+2,52
+
+#NEWCLTADDR05
+2,53
+
+#OLDCLTADDR01
+2,54
+
+#OLDCLTADDR02
+2,55
+
+#OLDCLTADDR03
+2,56
+
+#OLDCLTADDR04
+2,57
+
+#OLDCLTADDR05
+2,58
+
+#OLDLSURNAME
+1,59
+
+
+

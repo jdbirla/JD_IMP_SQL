@@ -1,0 +1,41 @@
+CREATE TABLE "AUDIT_CLEXPF_EXT" 
+(
+        "UNIQUE_NUMBER"	NUMBER(18,0),
+		"OLDFAXNO"		CHAR(16 BYTE),
+		"NEWFAXNO"		CHAR(16 BYTE)
+
+                                                  
+)
+ORGANIZATION external 
+(
+  TYPE oracle_loader
+  DEFAULT DIRECTORY EXT_DATA_DIR
+  ACCESS PARAMETERS 
+  (
+    RECORDS DELIMITED BY NEWLINE CHARACTERSET JA16SJISTILDE
+    BADFILE 'EXT_DATA_DIR':'AUDIT_CLEXPF_EXT.bad'
+    LOGFILE 'AUDIT_CLEXPF_EXT.log_xt'
+    READSIZE 1048576
+    FIELDS TERMINATED BY ","  
+    REJECT ROWS WITH ALL NULL FIELDS 
+    (
+ 
+		  
+		  
+		 "UNIQUE_NUMBER"	CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"OLDFAXNO"			CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"NEWFAXNO"			CHAR(255)   TERMINATED BY "," ENCLOSED BY '"'
+
+	  
+ )
+  )
+  location 
+  (
+    '/opt/ig/hitoku/user/output/outputAUDIT_CLEXPF.csv'
+  )
+)REJECT LIMIT UNLIMITED;
+/
+
+--drop table AUDIT_CLEXPF_EXT;
+
+--select * from AUDIT_CLEXPF_EXT; 

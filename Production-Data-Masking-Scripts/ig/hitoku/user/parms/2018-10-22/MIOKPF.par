@@ -1,0 +1,42 @@
+#SURNAME Last Name kana
+1,15
+
+#GIVNAME First name Kana
+1,16
+
+#CLTADDR01 Address Kanji
+2,22
+
+#CLTADDR02 Address Kanji
+2,23
+
+#CLTADDR03 Address Kanji
+2,24
+
+#CLTADDR04 Address Kanji
+2,25
+
+#CLTPHONE01 Phone number
+8,28
+
+#CLTPHONE02 Phone number
+8,29
+
+#FAXNO Phone number
+8,38
+
+#RINTERNET EMAIL ADDRESS
+1,39
+
+#LSURNAME Last Name kanji
+4,81
+
+#LGIVNAME First name Kanji
+1,82
+
+#BANKACCKEY Credit card number
+1,295
+
+#CLTADDR05 Address Kanji
+2,344
+

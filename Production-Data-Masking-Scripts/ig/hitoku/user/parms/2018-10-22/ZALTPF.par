@@ -1,0 +1,33 @@
+#CRDTCARD Credit card number
+1,15
+
+#ZKANASNM Last Name kana
+1,21
+
+#ZKANAGNM First name Kana
+1,22
+
+#KANJISURNAME Last Name kanji
+4,23
+
+#ZKANADDR01 Address Kana
+2,31
+
+#ZKANADDR02 Address Kana
+2,32
+
+#ZKANADDR03 Address Kana
+2,33
+
+#ZKANADDR04 Address Kana
+2,34
+
+#CLTPHONE01 Phone number
+8,35
+
+#ZWORKPLCE1 WORKPLACE
+2,46
+
+#ZWORKPLCE2 WORKPLACE
+2,47
+

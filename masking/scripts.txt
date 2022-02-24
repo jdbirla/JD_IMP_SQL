@@ -1,0 +1,26 @@
+   with t as (
+    select 'AUDIT_CLNTPF' as tt from dual
+   ),
+   shi as (
+   select TABLE_NAME, COLUMN_NAME from all_tab_columns@DBLPRD23 where owner='VM1DTA' and table_name=(select t.tt from t)
+   ),
+   pa as (
+   select TABLE_NAME, COLUMN_NAME from all_tab_columns@DBLPRD31 where owner='VM1DTA' and table_name=(select t.tt from t)
+   ),
+   shi_minus_pa as (
+   select shi.COLUMN_NAME from shi
+   minus 
+   select pa.COLUMN_NAME from pa
+   ),
+   pa_minus_shi as (
+   select pa.COLUMN_NAME from pa
+   minus 
+   select shi.COLUMN_NAME from shi
+   )
+   
+    select COLUMN_NAME, 'shi' as env from shi_minus_pa
+    union 
+    select COLUMN_NAME, 'pa' as env from pa_minus_shi
+   
+   ;
+   

@@ -1,0 +1,35 @@
+MERGE INTO ZSTGPF A USING ZSTGPF_EXT B
+ON (A.UNIQUE_NUMBER = B.UNIQUE_NUMBER)
+WHEN MATCHED THEN
+    UPDATE SET		
+		A.KANJISURNAME = B.KANJISURNAME,
+        A.LSURNAME     = B.LSURNAME,    
+        A.LGIVNAME     = B.LGIVNAME,    
+        A.ZKANASNM     = B.ZKANASNM,    
+        A.ZKANAGNM     = B.ZKANAGNM,    
+        A.CLTADDR01    = B.CLTADDR01,   
+        A.CLTADDR02    = B.CLTADDR02,   
+        A.CLTADDR03    = B.CLTADDR03,   
+        A.CLTADDR04    = B.CLTADDR04,   
+        A.ZKANADDR01   = B.ZKANADDR01,  
+        A.ZKANADDR02   = B.ZKANADDR02,  
+        A.ZKANADDR03   = B.ZKANADDR03,  
+        A.ZKANADDR04   = B.ZKANADDR04,  
+        A.CLTPHONE01   = B.CLTPHONE01,  
+        A.ZIKANSNM     = B.ZIKANSNM,    
+        A.ZIKANGNM     = B.ZIKANGNM,    
+        A.ZIKJADR1     = B.ZIKJADR1,    
+        A.ZIKJADR2     = B.ZIKJADR2,    
+        A.ZIKJADR3     = B.ZIKJADR3,    
+        A.ZIKJADR4     = B.ZIKJADR4,    
+        A.ZIKAADR1     = B.ZIKAADR1,    
+        A.ZIKAADR2     = B.ZIKAADR2,    
+        A.ZIKAADR3     = B.ZIKAADR3,    
+        A.ZIKAADR4     = B.ZIKAADR4,    
+        A.CRDTCARD     = B.CRDTCARD,    
+        A.BANKACCKEY01 = B.BANKACCKEY01,
+        A.BANKACCKEY02 = B.BANKACCKEY02,
+        A.BANKACCDSC01 = B.BANKACCDSC01,
+        A.ZFINAMKJ     = B.ZFINAMKJ,    
+        A.KANJIGIVNAME = B.KANJIGIVNAME;
+                       

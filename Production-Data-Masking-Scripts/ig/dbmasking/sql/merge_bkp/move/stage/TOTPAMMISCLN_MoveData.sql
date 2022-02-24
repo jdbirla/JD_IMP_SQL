@@ -1,0 +1,23 @@
+MERGE INTO TOTPAMMISCLN A USING TOTPAMMISCLN_EXT B
+ON (A.RECIDXCLNT = B.RECIDXCLNT)
+WHEN MATCHED THEN
+    UPDATE SET
+		A.ZKANASNM        = B.ZKANASNM  ,            	
+		A.ZKANAGNM        = B.ZKANAGNM  ,    	
+		A.LSURNAME        = B.LSURNAME  ,    	
+		A.LGIVNAME        = B.LGIVNAME  ,    	
+		A.ZADDRCD         = B.ZADDRCD   ,   	
+		A.ZKANADDR01      = B.ZKANADDR01,      
+		A.ZKANADDR02      = B.ZKANADDR02,      
+		A.ZKANADDR03      = B.ZKANADDR03,      
+		A.ZKANADDR04      = B.ZKANADDR04,      
+		A.CLTADDR01       = B.CLTADDR01 ,     	
+		A.CLTADDR02       = B.CLTADDR02 ,     	
+		A.CLTADDR03       = B.CLTADDR03 ,     	
+		A.CLTADDR04       = B.CLTADDR04 ,     	
+		A.CLTPHONE01      = B.CLTPHONE01,      
+		A.CLTPHONE02      = B.CLTPHONE02,      
+		A.RINTERNET       = B.RINTERNET ;	
+		
+		
+		

@@ -1,0 +1,33 @@
+OPTIONS (DIRECT=TRUE)
+UNRECOVERABLE
+LOAD DATA
+REPLACE
+INTO TABLE VM1DTA.ZMIEPF
+FIELDS TERMINATED BY "," ENCLOSED BY '"'
+TRAILING NULLCOLS
+(
+UNIQUE_NUMBER   ,
+DATATYPE        ,
+CHDRNUM         ,
+REFNUM          ,
+CLTIND          ,
+QUOTENO         ,
+ZENDCDE         ,
+ZCMPCODE        ,
+LSURNAME        ,
+PLANCDE         ,
+DATESTART       ,
+ERROR           ,
+ERRORDSC        ,
+USRPRF          ,
+JOBNM           ,
+DATIME          ,
+FIELD           ,
+REASONCD01      ,
+REASONCD02      ,
+REASONCD03      ,
+REASONCD04      ,
+REASONCD05      ,
+JOBNUM          ,
+OWNERKANASURNAME
+)

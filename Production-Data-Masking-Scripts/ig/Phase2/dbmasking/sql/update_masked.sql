@@ -1,0 +1,33 @@
+--update VM1DTA.AUDIT_CLEXPF set NEWRMBLPHONE = '099-9999-9999', OLDRMBLPHONE= '099-9999-9999';
+--update VM1DTA.AUDIT_CLNT set OLDCLTADDR01= 'MASKED', OLDCLTADDR02= 'MASKED', OLDCLTADDR03= 'MASKED', OLDCLTADDR04= 'MASKED', OLDCLTADDR05= 'MASKED', NEWCLTADDR01= 'MASKED', NEWCLTADDR02= 'MASKED', NEWCLTADDR03= 'MASKED', NEWCLTADDR04= 'MASKED', NEWCLTADDR05= 'MASKED';
+--update VM1DTA.CLEXPF set  RMBLPHONE = '099-9999-9999' ;
+--update VM1DTA.ZMIEPF set OWNERKANASURNAME = 'MASKED' ;
+--update VM1DTA.ZMUPPF set OWNERKANASURNAME = 'MASKED' ;
+--update VM1DTA.ZALTPF set KANJIGIVNAME= 'MASKED',KANJICLTADDR01= 'MASKED',KANJICLTADDR02= 'MASKED',KANJICLTADDR03= 'MASKED',KANJICLTADDR04= 'MASKED';
+--update VM1DTA.AUDIT_CLNTPF set OLDLSURNAME='MASKED', OLDSURNAME='MASKED';
+--update VM1DTA.CLNTPF  set KANJIGIVNAME='MASKED';
+--update VM1DTA.ZSTGPF  set ZISNM= 'MASKED', ZIKANSNM= 'MASKED', ZIKANGNM= 'MASKED', ZIGNM= 'MASKED', ZLETCAD1= 'MASKED', ZLETCAD2= 'MASKED', ZLETCAD3= 'MASKED', ZLETCAD4= 'MASKED', ZNKANSNM= 'MASKED', ZNKANGNM= 'MASKED', ZNKANADDR1= 'MASKED', ZNKANADDR2= 'MASKED', ZNKANADDR3= 'MASKED', ZNKANADDR4= 'MASKED';
+--update vm1dta.zmcipf set BANKACCDSC01='MASKED',BANKACCDSC02='MASKED';
+update  vm1dta.zendrpf set ZBINCD = ' ';
+update vm1dta.clexpf set RINTERNET='                                                  ' where RINTERNET is null; 
+alter trigger VM1DTA.TR_AUDIT_CLNTPF disable;
+alter trigger VM1DTA.TR_AUDIT_CLNT disable;
+update VM1dta.CLNTPF set CLTPHONE01='                ' where CLTPHONE01 is null;
+update VM1dta.CLNTPF set CLTPHONE02='                ' where CLTPHONE02 is null;
+update VM1dta.CLNTPF set CLTADDR04='                                                  ' where CLTADDR04 is null;
+update VM1dta.CLNTPF set CLTADDR05='                                                  ' where CLTADDR05 is null;
+update VM1dta.CLNTPF set FAXNO='                ' where FAXNO is null;
+update VM1dta.CLNTPF set ZWORKPLCE=' ' where ZWORKPLCE is null;
+alter trigger VM1DTA.TR_AUDIT_CLNTPF enable;
+alter trigger VM1DTA.TR_AUDIT_CLNT enable;
+update VM1dta.zaltpf set BANKACCDSC01='BANKACCDSC';
+update zstgpf set BANKACCDSC01 = 'MASKED' WHERE BANKACCDSC01 is not null; -- 20220111. Camouflage detected this.
+
+exec LOG_BAT_STATUS('MASK_PatchUpdatInLastStep Done');
+
+
+
+
+
+
+

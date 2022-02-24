@@ -1,0 +1,21 @@
+#SURNAME Last Name kana
+1,5
+
+#GIVNAME First name Kana
+1,6
+
+#CLTADDR01 Address Kanji
+2,7
+
+#CLTADDR02 Address Kanji
+2,8
+
+#CLTADDR03 Address Kanji
+2,9
+
+#CLTADDR04 Address Kanji
+2,10
+
+#CLTADDR05 Address Kanji
+2,11
+

@@ -1,0 +1,61 @@
+CREATE TABLE "MIOKPF_EXT" 
+(
+        "UNIQUE_NUMBER"	NUMBER(18,0),
+        "SURNAME"	    CHAR(30 CHAR),
+        "GIVNAME"	    CHAR(20 CHAR),
+        "CLTADDR01"	    NCHAR(50 CHAR),
+        "CLTADDR02"	    NCHAR(50 CHAR),
+        "CLTADDR03"	    NCHAR(50 CHAR),
+        "CLTADDR04"	    NCHAR(50 CHAR),
+        "CLTPHONE01"	CHAR(16 CHAR), 
+        "CLTPHONE02"	CHAR(16 CHAR), 
+        "FAXNO"     	CHAR(16 CHAR), 
+        "RINTERNET"	    CHAR(50 CHAR), 
+        "LSURNAME"	    CHAR(60 CHAR), 
+        "LGIVNAME"	    CHAR(60 CHAR), 
+        "BANKACCKEY"	CHAR(20 CHAR), 
+        "CLTADDR05"	    NCHAR(30 CHAR)       
+    
+)
+ORGANIZATION external 
+(
+  TYPE oracle_loader
+  DEFAULT DIRECTORY EXT_DATA_DIR
+  ACCESS PARAMETERS 
+  (
+    RECORDS DELIMITED BY NEWLINE CHARACTERSET JA16SJISTILDE
+    BADFILE 'EXT_DATA_DIR':'MIOKPF_EXT.bad'
+    LOGFILE 'MIOKPF_EXT.log_xt'
+    READSIZE 1048576
+    FIELDS TERMINATED BY ","  
+    REJECT ROWS WITH ALL NULL FIELDS 
+    (
+        "UNIQUE_NUMBER"      CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',		
+		"CRDTCARD"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"SURNAME"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"GIVNAME"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"CLTADDR01"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"CLTADDR02"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"CLTADDR03"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"CLTADDR04"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+        "CLTPHONE01"         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+        "CLTPHONE02"         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+        "FAXNO"              CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+        "RINTERNET"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+        "LSURNAME"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"LGIVNAME"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"BANKACCKEY"         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+	    "CLTADDR05"	         CHAR(255)   TERMINATED BY "," ENCLOSED BY '"'
+	   
+	   )
+  )
+  location 
+  (
+    '/opt/ig/hitoku/user/output/outputMIOKPF.csv'
+  )
+)REJECT LIMIT UNLIMITED;
+/
+
+--drop table MIOKPF_EXT;
+
+--select * from MIOKPF_EXT;

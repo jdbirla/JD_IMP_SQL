@@ -1,0 +1,4 @@
+set pagesize 0 trimspool on linesize 32700 underline off term off feed off
+spool /opt/ig/hitoku/user/input/ALLTABLEDATA/RIDER_ACUM_TEMP_ACT.sql;
+select /*+ paralle(10) */'"'||CHDRNUM||'","'||MBRNO||'","'||EFFDATE||'","'||DTETRM||'","'||RIDER_CODE01||'","'||RIDER_CODE02||'","'||RIDER_CODE03||'","'||RIDER_CODE04||'","'||RIDER_CODE05||'","'||RIDER_CODE06||'","'||RIDER_CODE07||'","'||RIDER_CODE08||'","'||RIDER_CODE09||'","'||RIDER_CODE10||'","'||RIDER_CODE11||'","'||RIDER_CODE12||'","'||RIDER_CODE13||'","'||RIDER_CODE14||'","'||RIDER_CODE15||'","'||RIDER_CODE16||'","'||RIDER_CODE17||'","'||RIDER_CODE18||'","'||RIDER_CODE19||'","'||RIDER_CODE20||'","'||RIDER_CODE21||'","'||RIDER_CODE22||'","'||RIDER_CODE23||'","'||RIDER_CODE24||'","'||RIDER_CODE25||'","'||RIDER_CODE26||'","'||RIDER_CODE27||'","'||RIDER_CODE28||'","'||RIDER_CODE29||'","'||RIDER_CODE30||'"' from  VM1DTA.RIDER_ACUM_TEMP_ACT;
+spool off;

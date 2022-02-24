@@ -1,0 +1,42 @@
+CREATE TABLE "BABRPF_EXT" 
+(
+        "UNIQUE_NUMBER"	     NUMBER(18,0),
+		"ZKANADDR01"		CHAR(60 CHAR),
+		"ZKANADDR02"		CHAR(60 CHAR),
+		"ZKANADDR03"		CHAR(60 CHAR),
+		"ZKANADDR04"		CHAR(60 CHAR)
+            
+                                                  
+                                                  
+)
+ORGANIZATION external 
+(
+  TYPE oracle_loader
+  DEFAULT DIRECTORY EXT_DATA_DIR
+  ACCESS PARAMETERS 
+  (
+    RECORDS DELIMITED BY NEWLINE CHARACTERSET JA16SJISTILDE
+    BADFILE 'EXT_DATA_DIR':'BABRPF_EXT.bad'
+    LOGFILE 'BABRPF_EXT.log_xt'
+    READSIZE 1048576
+    FIELDS TERMINATED BY ","  
+    REJECT ROWS WITH ALL NULL FIELDS 
+    (
+
+		 "UNIQUE_NUMBER"	CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"ZKANADDR01"		CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"ZKANADDR02"		CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"ZKANADDR03"		CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"ZKANADDR04"		CHAR(255)   TERMINATED BY "," ENCLOSED BY '"'
+ )
+  )
+  location 
+  (
+    '/opt/ig/hitoku/user/output/outputBABRPF.csv'
+  )
+)REJECT LIMIT UNLIMITED;
+/
+
+--drop table BABRPF_EXT;
+
+--select * from BABRPF_EXT; 

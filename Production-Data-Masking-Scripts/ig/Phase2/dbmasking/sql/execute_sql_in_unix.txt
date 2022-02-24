@@ -1,0 +1,78 @@
+﻿/opt/ig/dbmasking/cmd/IGMASKPRD22.sh  > /home/pg_dxfer/2018xxxxx_x.log
+
+login as: pg_dxfer
+pg_dxfer@jpaigdbp02's password:
+Last unsuccessful login: Mon Nov  5 10:00:12 JST 2018 on ssh from hkwxapj041.ap.zurich.com
+Last login: Tue Nov  6 10:07:57 JST 2018 on /dev/pts/1 from hkwxapj149.ap.zurich.com
+*******************************************************************************
+*                                                                             *
+*                                                                             *
+*  Welcome to AIX Version 7.1!                                                *
+*                                                                             *
+*                                                                             *
+*  Please see the README file in /usr/lpp/bos for information pertinent to    *
+*  this release of the AIX Operating System.                                  *
+*                                                                             *
+*                                                                             *
+*******************************************************************************
+$ bash
+bash-4.4$ pwd
+/home/pg_dxfer
+bash-4.4$ sqlplus VM1DTA/XqTEJc9p@jpaigdbp02:1521/IGPRD22
+
+SQL*Plus: Release 12.1.0.2.0 Production on 火 11月 6 10:11:50 2018
+
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+
+最終正常ログイン時間: 火 11月 06 2018 09:41:49 +09:00
+
+
+Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, Automatic Storage Management, OLAP, Advanced Analytics
+and Real Application Testing options
+に接続されました。
+10:11:50 VM1DTA@jpaigdbp02:1521/IGPRD22> exec APM_DBMASK_write_to_CLBAPF('IMP_DATA_DIR','CLBAPF.csv')
+exec APM_DBMASKwritetoTITDMCLTRNHIS('IMP_DATA_DIR','TITDMGCLTRNHIS.csv')
+exec APM_DBMASKwriteTITDMCLTRHIS_FP('IMP_DATA_DIR','TITDMGCLTRNHIS_FREEPLAN.csv')
+PL/SQLプロシージャが正常に完了しました。
+
+10:19:03 VM1DTA@jpaigdbp02:1521/IGPRD22>
+exec APM_DBMASK_MERG_TITDMGCLTRNHIS
+exec APM_DBMASK_MERGTITDMCLTRHIS_FP
+
+
+
+/opt/ig/hitoku/user/bin/TITDMGCLTRNHIS_Mask.sh
+/opt/ig/hitoku/user/bin/TITDMGCLTRNHIS_FREEPLAN_Mask.sh
+--------------------------
+
+sh /opt/ig/dbmasking/sql/CREATE_OBJ.sh | sqlplus VM1DTA/XqTEJc9p@jpaigdbp02:1521/IGPRD22
+
+exec APM_DBMASK_writetoCLRRPF('IMP_DATA_DIR','CLRRPF.csv')
+exec APM_DBMASK_writetoAUDIT_CLRRPF('IMP_DATA_DIR','AUDIT_CLRRPF.csv')
+
+
+------------------------------------How to execute one table from ene to end----------------
+
+1. sh /opt/ig/dbmasking/sql/CREATE_OBJ.sh | sqlplus VM1DTA/XqTEJc9p@jpaigdbp02:1521/IGPRD22
+
+2. sqlplus VM1DTA/XqTEJc9p@jpaigdbp02:1521/IGPRD22
+exec APM_DBMASK_writetoCLRRPF('IMP_DATA_DIR','CLRRPF.csv')
+
+3. Do the masking
+/opt/ig/hitoku/user/bin/CLRRPF_Mask.sh
+
+4.
+awk -F',' '{print $1 "," substr($2,1,11) substr($3,2)}' /opt/ig/hitoku/user/output/outputCLRRPF.csv > /opt/ig/hitoku/user/output/outputCLRRPF1.csv
+sed 's/",/"|/g' /opt/ig/hitoku/user/output/outputCLRRPF1.csv |  awk -F"|" -v OFS=',' '{ print  substr($1,1, 18)"\"",  substr($2,1, 30)"\""}' | sed 's/""/"/g' > /opt/ig/hitoku/user/output/CLRRPF_TEMP.csv
+
+5. cd /opt/ig/hitoku/user/output
+sqlldr VM1DTA/XqTEJc9p@jpaigdbp02:1521/IGPRD22 table=CLRRPF_TEMP characterset=JA16SJIS data=CLRRPF_TEMP.csv enclosed_by=\'\"\'
+
+sqlldr VM1DTA/XqTEJc9p@jpaigdbp02:1521/IGPRD22 table=TITDMGCLNTBANK_TEMP characterset=JA16SJIS data=TITDMGCLNTBANK_TEMP.csv enclosed_by=\'\"\'
+sqlldr VM1DTA/XqTEJc9p@jpaigdbp02:1521/IGPRD22 table=TITDMGCLNTBANK_FREEPLAN_TEMP characterset=JA16SJIS data=TITDMGCLNTBANK_FREEPLAN_TEMP.csv enclosed_by=\'\"\'
+
+
+6.
+sqlplus VM1DTA/XqTEJc9p@jpaigdbp02:1521/IGPRD22
+exec APM_DBMASK_MERG_CLRRPF

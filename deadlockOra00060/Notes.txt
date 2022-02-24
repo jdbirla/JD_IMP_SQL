@@ -1,0 +1,10 @@
+The ORA-00060 is notorious and does occur multiple times.
+In IG mostly it is the case that initrans is not sufficient. In other cases it may happen because of the code issue when multiple threads trying to update the same records and blocking each other.
+So, first ensure that there is no such issue and then apply the changes to increase the initrans.
+
+Why initrans cause the issue is explaine in the PPT files in this folder.
+
+There are many discussions on stackoveflow, which I have also contributed, refer those links:
+https://stackoverflow.com/questions/30634300/how-to-understand-ora-00060-deadlock-trace-file/69654327#69654327
+
+https://stackoverflow.com/questions/70678272/ora-00060-deadlock-trace-file-query-found-but-can-we-get-its-parameter-values

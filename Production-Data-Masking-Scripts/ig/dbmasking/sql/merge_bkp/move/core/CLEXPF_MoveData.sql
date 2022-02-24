@@ -1,0 +1,13 @@
+MERGE INTO CLEXPF A USING CLEXPF_EXT B
+ON (A.UNIQUE_NUMBER = B.UNIQUE_NUMBER)
+WHEN MATCHED THEN
+    UPDATE SET		
+			
+		A.FAXNO=B.FAXNO,
+        B.RINTERNET=B.RINTERNET,
+        B.RINTERNET2=B.RINTERNET2;
+
+
+       
+        
+                               

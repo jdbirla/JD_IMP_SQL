@@ -1,0 +1,13 @@
+MERGE INTO CLBAPF A USING CLBAPF_EXT B
+ON (A.UNIQUE_NUMBER = B.UNIQUE_NUMBER)
+WHEN MATCHED THEN
+    UPDATE SET		
+			
+		A.BANKACCKEY=B.BANKACCKEY,
+        B.BANKACCDSC=B.BANKACCDSC;
+       
+
+
+       
+        
+                               

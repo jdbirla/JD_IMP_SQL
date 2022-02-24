@@ -1,0 +1,114 @@
+#PHSURNAME 
+1,12
+
+#PHGIVNAME 
+1,13
+
+#PHBSURNAMEJ 
+1,14
+
+#PHBGIVNAMEJ Last Name kanji
+4,15
+
+#PHCLTHPHONE Phone number
+8,18
+
+#PHCLTOPHONE Phone number
+8,19
+
+#PHFAXNO Phone number
+8,20
+
+#PHMOBILE Phone number
+8,21
+
+#PHBPOSTCODE Credit card number
+1,23
+
+#PHBADD1R Address Kana
+2,24
+
+#PHBADD2R Address Kana
+2,25
+
+#PHBADD3R Address Kana
+2,26
+
+#PHBADD4R Address Kana
+2,27
+
+#PHBADD5R Address Kana
+2,28
+
+#PHBADD6R Address Kana
+2,29
+
+#PHBADD7R Address Kana
+2,30
+
+#PHBADD8R Address Kana
+2,31
+
+#PHBANKACCKEY Credit card number
+1,35
+
+#PHBANKACCDSC 
+1,37
+
+#PHCARDNMB 
+1,40
+
+#PHCARDNAME 
+1,44
+
+#ISSURNAME 
+1,45
+
+#ISGIVNAME 
+1,46
+
+#ISBSURNAMEJ 
+4,47
+
+#ISBGIVNAMEJ 
+4,48
+
+#ISCLTHPHONE Phone number
+8,51
+
+#ISCLTOPHONE Phone number
+8,52
+
+#ISFAXNO Phone number
+8,53
+
+#ISMOBILE Phone number
+8,54
+
+#ISBADD1R Address Kana
+2,57
+
+#ISBADD2R Address Kana
+2,58
+
+#ISBADD3R Address Kana
+2,59
+
+#ISBADD4R Address Kana
+2,60
+
+#ISBADD5R Address Kana
+2,61
+
+#ISBADD6R Address Kana
+2,62
+
+#ISBADD7R Address Kana
+2,63
+
+#ISBADD8R Address Kana
+2,64
+
+#CCARD Credit card number
+1,83
+

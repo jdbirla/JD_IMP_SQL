@@ -1,0 +1,34 @@
+CREATE TABLE "ZMUPPF_EXT" 
+(
+        "UNIQUE_NUMBER"       NUMBER(18,0), 
+		"LSURNAME"            VARCHAR2(60 CHAR)
+		
+	)
+ORGANIZATION external 
+(
+  TYPE oracle_loader
+  DEFAULT DIRECTORY EXT_DATA_DIR
+  ACCESS PARAMETERS 
+  (
+    RECORDS DELIMITED BY NEWLINE CHARACTERSET JA16SJISTILDE
+    BADFILE 'EXT_DATA_DIR':'ZMUPPF_EXT.bad'
+    LOGFILE 'ZMUPPF_EXT.log_xt'
+    READSIZE 1048576
+    FIELDS TERMINATED BY ","  
+    REJECT ROWS WITH ALL NULL FIELDS 
+    (
+         "UNIQUE_NUMBER"   CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		 "LSURNAME"        CHAR(255 ) TERMINATED BY "," ENCLOSED BY '"'	
+		  
+    )
+  )
+  location 
+  (
+    '/opt/ig/hitoku/user/output/outputZMUPPF.csv'
+  )
+)REJECT LIMIT UNLIMITED;
+/
+
+--drop table ZMUPPF_EXT;
+
+--select * from ZMUPPF_EXT

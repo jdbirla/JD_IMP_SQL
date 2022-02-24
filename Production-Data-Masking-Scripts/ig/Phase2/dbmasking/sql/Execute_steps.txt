@@ -1,0 +1,11 @@
+1.Give the grant permission from system user
+grant read, write on directory EXT_DATA_DIR to vm1dta;
+grant read, write on directory IMP_DATA_DIR to vm1dta;
+
+2. Execute Parent.sh for  extraction
+
+3. Execute ParentLoader.sh create ext tables and temp tables with masking data
+
+4. Execute  Parent_move.sh for update IG core DB
+
+

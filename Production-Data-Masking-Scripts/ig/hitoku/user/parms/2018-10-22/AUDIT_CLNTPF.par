@@ -1,0 +1,144 @@
+#OLDSURNAME Last Name kana
+1,10
+
+#OLDGIVNAME First name Kana
+1,11
+
+#OLDCLTPHONE01 Phone number
+8,25
+
+#OLDCLTPHONE02 Phone number
+8,26
+
+#OLDFAXNO Phone number
+8,41
+
+#OLDLGIVNAME Last Name kanji
+4,103
+
+#OLDLGIVNAME First name Kanji
+1,103
+
+#OLDKANJISURNAME Last Name kanji
+4,111
+
+#OLDKANJIGIVNAME First name Kanji
+1,112
+
+#OLDKANJICLTADDR01 Address Kanji
+2,113
+
+#OLDKANJICLTADDR02 Address Kanji
+2,114
+
+#OLDKANJICLTADDR03 Address Kanji
+2,115
+
+#OLDKANJICLTADDR04 Address Kanji
+2,116
+
+#OLDKANJICLTADDR05 Address Kanji
+2,117
+
+#OLDZKANASNM Last Name kana
+1,119
+
+#OLDZKANAGNM First name Kana
+1,120
+
+#OLDZKANADDR01 Address Kana
+2,121
+
+#OLDZKANADDR02 Address Kana
+2,122
+
+#OLDZKANADDR03 Address Kana
+2,123
+
+#OLDZKANADDR04 Address Kana
+2,124
+
+#OLDZKANADDR05 Address Kana
+2,125
+
+#OLDZADDRCD Address Kana
+2,126
+
+#OLDZKANASNMNOR Last Name kana
+1,129
+
+#OLDZKANAGNMNOR First name Kana
+1,130
+
+#NEWSURNAME Last Name kana
+1,141
+
+#NEWGIVNAME First name Kana
+1,142
+
+#NEWCLTPHONE01 Phone number
+8,156
+
+#NEWCLTPHONE02 Phone number
+8,157
+
+#NEWFAXNO Phone number
+8,172
+
+#NEWLSURNAME Last Name kanji
+4,233
+
+#NEWLGIVNAME First name Kanji
+1,234
+
+#NEWKANJISURNAME Last Name kana
+1,242
+
+#NEWKANJIGIVNAME First name Kanji
+1,243
+
+#NEWKANJICLTADDR01 Address Kanji
+2,244
+
+#NEWKANJICLTADDR02 Address Kanji
+2,245
+
+#NEWKANJICLTADDR03 Address Kanji
+2,246
+
+#NEWKANJICLTADDR04 Address Kanji
+2,247
+
+#NEWKANJICLTADDR05 Address Kanji
+2,248
+
+#NEWZKANASNM Last Name kana
+1,250
+
+#NEWZKANAGNM First name Kana
+1,251
+
+#NEWZKANADDR01 Address Kana
+2,252
+
+#NEWZKANADDR02 Address Kana
+2,253
+
+#NEWZKANADDR03 Address Kana
+2,254
+
+#NEWZKANADDR04 Address Kana
+2,255
+
+#NEWZKANADDR05 Address Kana
+2,256
+
+#NEWZADDRCD Address Kana
+2,257
+
+#NEWZKANASNMNOR Last Name kana
+1,260
+
+#NEWZKANAGNMNOR First name Kana
+1,261
+

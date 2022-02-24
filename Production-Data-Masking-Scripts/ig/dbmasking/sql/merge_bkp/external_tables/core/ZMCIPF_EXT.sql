@@ -1,0 +1,33 @@
+CREATE TABLE "ZMCIPF_EXT" 
+(
+        "UNIQUE_NUMBER"       NUMBER(18,0), 
+		"CRDTCARD"            VARCHAR2(20 CHAR)
+				
+)
+ORGANIZATION external 
+(
+  TYPE oracle_loader
+  DEFAULT DIRECTORY EXT_DATA_DIR
+  ACCESS PARAMETERS 
+  (
+    RECORDS DELIMITED BY NEWLINE CHARACTERSET JA16SJISTILDE
+    BADFILE 'EXT_DATA_DIR':'ZMCIPF_EXT.bad'
+    LOGFILE 'ZMCIPF_EXT.log_xt'
+    READSIZE 1048576
+    FIELDS TERMINATED BY ","  
+    REJECT ROWS WITH ALL NULL FIELDS 
+    (
+        "UNIQUE_NUMBER"  CHAR(255)   TERMINATED BY "," ENCLOSED BY '"',
+		"CRDTCARD"        CHAR(255 ) TERMINATED BY "," ENCLOSED BY '"'				  
+    )
+  )
+  location 
+  (
+    '/opt/ig/hitoku/user/output/outputZMCIPF.csv'
+  )
+)REJECT LIMIT UNLIMITED;
+/
+
+--drop table ZMCIPF_EXT;
+
+--select * from ZMCIPF_EXT; 

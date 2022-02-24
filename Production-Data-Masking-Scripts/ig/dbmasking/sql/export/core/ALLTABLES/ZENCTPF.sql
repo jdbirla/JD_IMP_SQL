@@ -1,0 +1,4 @@
+set pagesize 0 trimspool on linesize 32700 underline off term off feed off
+spool /opt/ig/hitoku/user/input/ALLTABLEDATA/ZENCTPF.sql;
+select /*+ paralle(10) */'"'||SYS_STS$QMQ7TCKRA1$LGMMRIAT#I_||'","'||SYS_STS3KLX_2X0AH9FOLJX1EJF22I||'","'||SYS_STS5_ZZAVRRVGN1U39H321P1D4||'","'||SYS_STS9K4YHBXC#RZEKC8K46FX#GT||'","'||SYS_STSJRO1550LVK8HPVY371BTF9R||'","'||SYS_STSL2F3Q8VWL3_WV3DE4B6MNPJ||'","'||SYS_STSPTZGCUCOZ5JJOAN09I90RCR||'","'||SYS_STSQYZOG8OYGU20$L7N86W384$||'","'||SYS_STSTU_AT7HJ0TB0ZX0TWO#NV$V||'","'||SYS_STS_YWTAU#DGCTW2NEQSXZ8WB2||'","'||ZPOLNMBR||'","'||ZENDCDE||'","'||ZCRDTYPE||'","'||ZCNBRFRM||'","'||ZCNBRTO||'","'||ZMSTID||'","'||ZMSTSNME||'","'||ZCCDE||'","'||ZCONSGNM||'","'||UNIQUE_NUMBER||'","'||ZPREFIX||'","'||SEQNO||'","'||ZMSTIDV||'","'||ZMSTSNMEV||'","'||ZCARDDC||'","'||USRPRF||'","'||JOBNM||'","'||DATIME||'"' from  VM1DTA.ZENCTPF;
+spool off;

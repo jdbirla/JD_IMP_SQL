@@ -1,0 +1,4 @@
+set pagesize 0 trimspool on linesize 32700 underline off term off feed off
+spool /opt/ig/hitoku/user/input/ALLTABLEDATA/GPMDPF_NEW_NOV13.sql;
+select /*+ paralle(10) */'"'||UNIQUE_NUMBER||'","'||CHDRCOY||'","'||CHDRNUM||'","'||PRODTYP||'","'||HEADCNTIND||'","'||MBRNO||'","'||DPNTNO||'","'||TRANNO||'","'||RECNO||'","'||PLANNO||'","'||SUBSCOY||'","'||SUBSNUM||'","'||BILLTYP||'","'||BILLNO||'","'||EFFDATE||'","'||PPREM||'","'||PEMXTPRM||'","'||POAXTPRM||'","'||INSTNO||'","'||PRMFRDT||'","'||PRMTODT||'","'||PNIND||'","'||MMIND||'","'||SRCDATA||'","'||BATCCOY||'","'||BATCBRN||'","'||BATCACTYR||'","'||BATCACTMN||'","'||BATCTRCD||'","'||BATCBATCH||'","'||RECTYPE||'","'||JOBNOUD||'","'||FLATFEE||'","'||FEES||'","'||EVNTFEE||'","'||JOBNOISS||'","'||BBJOBNO||'","'||MFJOBNO||'","'||JOBNOTPA||'","'||USRPRF||'","'||JOBNM||'","'||DATIME||'"' from  VM1DTA.GPMDPF_NEW_NOV13;
+spool off;

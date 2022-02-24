@@ -1,0 +1,125 @@
+#KANJISURNAME Last Name kanji
+4,2
+
+#LSURNAME Last Name kanji
+4,3
+
+#LGIVNAME First name Kanji
+1,4
+
+#ZKANASNM Last Name kana
+1,5
+
+#ZKANAGNM First name Kana
+1,6
+
+#CLTADDR01 Address Kanji
+2,7
+
+#CLTADDR02 Address Kanji
+2,8
+
+#CLTADDR03 Address Kanji
+2,9
+
+#CLTADDR04 Address Kanji
+2,10
+
+#ZKANADDR01 Address Kana
+2,11
+
+#ZKANADDR02 Address Kana
+2,12
+
+#ZKANADDR03 Address Kana
+2,13
+
+#ZKANADDR04 Address Kana
+2,14
+
+#CLTPHONE01 Phone number
+8,15
+
+#ZIKANSNM 
+1,16
+
+#ZIKANGNM 
+1,17
+
+#ZIKJADR1 Address Kanji
+2,18
+
+#ZIKJADR2 Address Kanji
+2,19
+
+#ZIKJADR3 Address Kanji
+2,20
+
+#ZIKJADR4 Address Kanji
+2,21
+
+#ZIKAADR1 Address Kanji
+2,22
+
+#ZIKAADR2 Address Kanji
+2,23
+
+#ZIKAADR3 Address Kanji
+2,24
+
+#ZIKAADR4 Address Kanji
+2,25
+
+#CRDTCARD Credit card number
+1,26
+
+#BANKACCKEY01 Credit card number
+1,27
+
+#BANKACCKEY02 Credit card number
+1,28
+
+#BANKACCDSC01 Credit card number
+1,29
+
+#ZFINAMKJ 
+1,30
+
+#KANJIGIVNAME 
+1,31
+
+#ZISNM
+1,32
+
+#ZIGNM
+1,33
+#ZLETCAD1
+1,34
+
+#ZLETCAD2
+1,35
+
+#ZLETCAD3
+1,36
+
+#ZLETCAD4
+1,37
+
+#ZNKANSNM
+1,38
+
+#ZNKANGNM
+1,39
+
+#ZNKANADDR1
+1,40
+
+#ZNKANADDR2
+1,41
+
+#ZNKANADDR3
+1,42
+
+#ZNKANADDR4
+1,43
+

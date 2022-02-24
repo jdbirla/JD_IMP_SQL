@@ -1,0 +1,7 @@
+Rewind table.
+(A) Enable row movement is needed.
+select row_movement from user_tables where table_name = 'ZUCLPF'; -- check first.
+alter table vm1dta.zuclpf enable row movement; -- apply change
+--check the change again.
+
+(B) flashback table vm1dta.zuclpf to timestamp to_timestamp('2016-08-11 07:30:00', 'YYYY-MM-DD HH:MI:SS');

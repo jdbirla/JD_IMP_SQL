@@ -1,0 +1,7 @@
+Based on Phase 1 Masking scripts, we have created the scripts for Phase 2.
+The major contributors are: Charles, Jitendra and Chandan.
+The scripts were completed in December 2021. 
+It took around 20days to update the scripts to complete the masking if new tables and columns add/removed in Phase2.
+The document to explain the whole framework of the logic is drafted in an excel file. This shall be referenced when new changes (add/remove new table/columns)  be done. The excel file is present in the Zurich  Sharepoint: https://ziapac.sharepoint.com/:f:/r/sites/ITServiceUnit/NewPAS/PA/02.%20Execution/96.%20Post%20go-live/10.%20Masking?csf=1&web=1&e=KocTR5
+Refer file Masking_Tables_PA_SHI_vxx.xls  xx: latest version
+

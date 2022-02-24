@@ -1,0 +1,14 @@
+
+#Tue Dec 14 21:37:43 JST 2021
+# To manage environment wise user id and password.
+#------- To be sure type the environemnt name: This is PRD22 ------------
+export IGDBSCHEMA=VM1DTA
+export IGDBPWD=ReplaceWithPassword
+export IGDBSID=RightSID
+export HOSTNAME=HostName
+export IGDBCONSTR=VM1DTA/$IGDBPWD@$HOSTNAME:1521/$IGDBSID
+
+export STGDBSCHEMA=STAGEDBUSR
+export STGDBPWD=ReplaceWithPassword
+export STGDBSID=RightSIDOFStg
+

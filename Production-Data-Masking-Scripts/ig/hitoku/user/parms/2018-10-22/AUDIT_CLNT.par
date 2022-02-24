@@ -1,0 +1,24 @@
+#OLDSURNAME Last Name kana
+1,6
+
+#OLDGIVNAME First name Kana
+1,7
+
+#OLDCLTPHONE01 Phone number
+8,18
+
+#OLDCLTPHONE02 Phone number
+8,19
+
+#NEWSURNAME Last Name kana
+1,23
+
+#NEWGIVNAME First name Kana
+1,24
+
+#NEWCLTPHONE01 Phone number
+8,35
+
+#NEWCLTPHONE02 Phone number
+8,36
+

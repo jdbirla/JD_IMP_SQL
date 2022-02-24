@@ -1,0 +1,45 @@
+#LSURNAME Last Name kanji		
+4,6
+
+#LGIVNAME First name Kanji		
+1,7
+
+#ZKANASNM Last Name kana		
+1,8
+
+#ZKANAGNM First name Kana		
+1,9
+
+#ZKANADDR01 Address Kana		
+2,12
+
+#ZKANADDR02 Address Kana		
+2,13
+
+#ZKANADDR03 Address Kana		
+2,14
+
+#ZKANADDR04 Address Kana		
+2,15
+
+#CLTADDR01 Address Kanji		
+2,16
+
+#CLTADDR02 Address Kanji		
+2,17
+
+#CLTADDR03 Address Kanji		
+2,18
+
+#CLTADDR04 Address Kanji		
+2,19
+
+#CLTPHONE01 Phone number		
+8,20
+
+#CLTPHONE02 Phone number		
+8,21
+
+#ZWORKPLCE WORKPLACE		
+2,22
+

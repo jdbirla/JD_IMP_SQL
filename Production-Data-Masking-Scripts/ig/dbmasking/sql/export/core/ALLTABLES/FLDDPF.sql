@@ -1,0 +1,4 @@
+set pagesize 0 trimspool on linesize 32700 underline off term off feed off
+spool /opt/ig/hitoku/user/input/ALLTABLEDATA/FLDDPF.sql;
+select /*+ paralle(10) */'"'||UNIQUE_NUMBER||'","'||FDID||'","'||NMPG||'","'||TYPE_T||'","'||EDIT||'","'||LENF||'","'||DECP||'","'||WNTP||'","'||WNST||'","'||TABW||'","'||TCOY||'","'||ERRCD||'","'||PROG01||'","'||PROG02||'","'||PROG03||'","'||PROG04||'","'||CFID||'","'||TERMID||'","'||USER_T||'","'||TRDT||'","'||TRTM||'","'||ADDF01||'","'||ADDF02||'","'||ADDF03||'","'||ADDF04||'","'||CURRFDID||'","'||ALLOCLEN||'","'||DBDATIME||'","'||SFDATIME||'","'||DBCSCAP||'","'||USRPRF||'","'||JOBNM||'","'||DATIME||'","'||ZAGREGNO||'","'||ZREPSTNM||'","'||ZCONSIDT||'","'||ZTRGTFLG||'","'||ZCOLRATE||'","'||ZCOLLFEE||'","'||ZAGPTNUM||'","'||ZAGPTPFX||'","'||ZAGPTCOY||'"' from  VM1DTA.FLDDPF;
+spool off;

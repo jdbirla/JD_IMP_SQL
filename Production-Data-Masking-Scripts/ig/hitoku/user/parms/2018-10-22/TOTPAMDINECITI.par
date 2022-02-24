@@ -1,0 +1,35 @@
+#CLTPHONE01 Phone number
+8,19
+
+#PHZKANASNM First name Kanji
+1,49
+#PHZKANAGNM First name Kanji
+1,50
+
+#INSZKANASNM First name Kanji
+1,51
+
+#INSZKANAGNM First name Kanji
+1,52
+
+#CLTADDR01 Address Kanji
+2,53
+
+#CLTADDR02 Address Kanji
+2,54
+
+#CLTADDR03 Address Kanji
+2,55
+
+#CLTADDR04 Address Kanji
+2,56
+
+#LSURNAME Last Name kanji
+4,57
+
+#LGIVNAME First name Kanji
+1,58
+#CRDTCARD Credit card number
+1,62
+
+
