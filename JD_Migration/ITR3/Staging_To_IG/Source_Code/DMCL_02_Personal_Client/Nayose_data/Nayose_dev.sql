@@ -1,0 +1,296 @@
+Insert into Jd1dta.DMBARGSPF (SCHEDULE_NAME,COMPANY,FSUCOCOMPANY,USRPRF,BRANCH,TRANSCODE,VRCMTIME,VRCMUSER,TRDT1,ACCTYEAR,ACCTMONTH,VRCMTERMID,CHUNK_SIZE,DEGREE_PARALLEL) values ('G1ZDNAYCLT','1',null,'JBIRLA','31','BAI9',null,null,null,null,null,null,5,5);
+Insert into Jd1dta.DMPRFXPF (MODULEID,MODPREFIX,MODULEDESC) values ('NYCL','NY','Nayose Personal client    ');
+---------------------------------------------------------------
+--   DDL for table PAZDNYPF
+--------------------------------------------------------------------   
+
+  CREATE TABLE "Jd1dta"."PAZDNYPF" 
+   (	
+    "UNIQUEID" NUMBER(*,0) GENERATED ALWAYS AS IDENTITY MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE , 
+	"PREFIX" VARCHAR2(2 CHAR), 
+    "CLNTSTAS" VARCHAR2(2 CHAR),
+	"ZENTITY" VARCHAR2(50 CHAR), 
+	"ZIGVALUE" VARCHAR2(50 CHAR), 
+	"JOBNUM" NUMBER(8,0), 
+	"JOBNAME" VARCHAR2(10 CHAR)
+   );
+     CREATE UNIQUE INDEX "Jd1dta"."UNI_NY_ZENT" ON "Jd1dta"."PAZDNYPF" ("ZENTITY") ;
+
+   
+--------------
+--DMIGTITNYCLT
+----------------
+
+CREATE TABLE "Jd1dta"."DMIGTITNYCLT" 
+   (	"UNIQUEID" NUMBER(*,0) GENERATED ALWAYS AS IDENTITY MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  NOT NULL ENABLE, 
+	"REFNUM" VARCHAR2(8 CHAR), 
+	"IG_CLNTNUM" VARCHAR2(8 CHAR), 
+	"DCH_ZENDCDE" VARCHAR2(20 CHAR), 
+	"DCH_ZKANASNMNOR" VARCHAR2(4000 CHAR), 
+	"DCH_ZKANAGNMNOR" VARCHAR2(4000 CHAR), 
+	"DCH_CLTDOB" VARCHAR2(40 BYTE), 
+	"DCH_CLTPCODE" VARCHAR2(10 CHAR), 
+	"DCH_CLTSEX" VARCHAR2(1 CHAR), 
+	"DCH_CLTPHONE01" VARCHAR2(64 BYTE)
+   ) ;
+
+  CREATE UNIQUE INDEX "Jd1dta"."UNI_NY_REFNUM" ON "Jd1dta"."DMIGTITNYCLT" ("REFNUM") ;
+   
+---------------------------------------------------------------
+--   DDL for view of PAZDNYPF
+--------------------------------------------------------------------     
+   CREATE OR REPLACE FORCE EDITIONABLE VIEW "Jd1dta"."VIEW_DM_PAZDNYPF"  ("PREFIX", "CLNTSTAS","ZENTITY","ZIGVALUE","JOBNUM","JOBNAME")AS
+SELECT  
+  "PREFIX", 
+  "CLNTSTAS",
+  "ZENTITY",
+  "ZIGVALUE", 
+  "JOBNUM",
+  "JOBNAME"
+FROM Jd1dta.PAZDNYPF;
+------------------------
+--DDL for DMVIEWNAYOSE
+----------------------------
+
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "Jd1dta"."DMVIEWNAYOSE" ("ROW_NUM", "ZENDCDE", "CLNTNUM", "ZKANASNMNOR", "ZKANAGNMNOR", "CLTSEX", "CLTDOB", "CLTPCODE", "RMBLPHONE", "CHDRNUM", "COWNNUM", "STATCODE", "ZPLANCLS", "PRIORTY") AS 
+  select 
+ "ROW_NUM", "ZENDCDE", "CLNTNUM", "ZKANASNMNOR", "ZKANAGNMNOR", "CLTSEX", "CLTDOB", "CLTPCODE", "RMBLPHONE", "CHDRNUM", "COWNNUM", "STATCODE", "ZPLANCLS", "PRIORTY"
+from 
+ ( SELECT
+    ROW_NUMBER() OVER(
+        PARTITION BY "ZENDCDE", "ZKANASNMNOR", "ZKANAGNMNOR", "CLTSEX", "CLTDOB", "CLTPCODE", "RMBLPHONE"
+        ORDER BY
+            priorty ASC, clntnum DESC
+    ) row_num,
+    "ZENDCDE",
+    "CLNTNUM",
+    "ZKANASNMNOR",
+    "ZKANAGNMNOR",
+    "CLTSEX",
+    "CLTDOB",
+    "CLTPCODE",
+    "RMBLPHONE",
+    "CHDRNUM",
+    "COWNNUM",
+    "STATCODE",
+    "ZPLANCLS",
+    "PRIORTY"
+FROM
+    (
+        SELECT
+            rtrim(zendcde) AS zendcde,
+            rtrim(clntnum) AS clntnum,
+            rtrim(zkanasnmnor) AS zkanasnmnor,
+            rtrim(zkanagnmnor) AS zkanagnmnor,
+            rtrim(cltsex) AS cltsex,
+            rtrim(cltdob) AS cltdob,
+            rtrim(cltpcode) AS cltpcode,
+            rtrim(rmblphone) AS rmblphone,
+            chdrnum,
+            cownnum,
+            statcode,
+            zplancls,
+            (
+                  CASE
+                    WHEN ( statcode = 'IF' or statcode = 'XN'
+                           AND zplancls = 'PP' ) THEN
+                        '1'
+                    WHEN (statcode = 'IF' or statcode = 'XN'
+                           AND zplancls = 'FP' ) THEN
+                        '2'
+                    WHEN ( statcode = 'CA'
+                           AND zplancls = 'PP' ) THEN
+                        '3'
+                    WHEN ( statcode = 'CA'
+                           AND zplancls = 'FP' ) THEN
+                        '4'
+                    ELSE
+                        '9'
+                END
+            ) AS priorty
+        FROM
+            (
+                SELECT
+                    zcel.zendcde,
+                    clnt.clntnum,
+                    ( regexp_replace(clnt.zkanasnmnor, ' ', '') ) AS zkanasnmnor,
+                    ( regexp_replace(clnt.zkanagnmnor, ' ', '') ) AS zkanagnmnor,
+                    clnt.cltsex,
+                    clnt.cltdob,
+                    clnt.cltpcode,
+                    replace(rtrim(clex.rmblphone), '-') AS rmblphone
+                FROM
+                    Jd1dta.clntpf      clnt
+                    INNER JOIN Jd1dta.zcelinkpf   zcel ON zcel.clntnum = clnt.clntnum
+                    left outer
+                    JOIN Jd1dta.clex ON clex.clntnum = clnt.clntnum
+                WHERE
+                    clnt.validflag = '1'
+                    AND clnt.clttype = 'P'
+            ) cl
+            INNER JOIN (
+                SELECT
+                    gchd.chdrnum,
+                    gchd.cownnum,
+                    gchd.statcode,
+                    gchp.zplancls
+                FROM
+                    gchd     gchd
+                    INNER JOIN gchppf   gchp ON gchd.chdrnum = gchp.chdrnum
+            ) pol ON cl.clntnum = pol.cownnum
+    )
+)
+WHERE
+    row_num = 1;
+	
+	------------------ITR3
+	
+	
+	Drop table "STAGEDBUSR"."TITDMGCLTRNHIS" ;
+  CREATE TABLE "STAGEDBUSR"."TITDMGCLTRNHIS" 
+   (	
+	"RECIDXCLHIS" NUMBER(*,0) GENERATED ALWAYS AS IDENTITY MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE , 
+	"REFNUM" VARCHAR2(10 CHAR) NOT NULL ENABLE, 
+	"ZSEQNO" NUMBER(3,0) NOT NULL ENABLE, 
+	"EFFDATE" NUMBER(8,0) NOT NULL ENABLE, 
+	"LSURNAME" VARCHAR2(60 CHAR) NOT NULL ENABLE, 
+	"LGIVNAME" VARCHAR2(60 CHAR) NOT NULL ENABLE, 
+	"ZKANAGIVNAME" VARCHAR2(60 CHAR) NOT NULL ENABLE, 
+	"ZKANASURNAME" VARCHAR2(60 CHAR) NOT NULL ENABLE, 
+	"ZKANASNMNOR" VARCHAR2(60 CHAR) NOT NULL ENABLE, 
+	"ZKANAGNMNOR" VARCHAR2(60 CHAR) NOT NULL ENABLE, 
+	"CLTPCODE" VARCHAR2(10 CHAR) NOT NULL ENABLE, 
+	"CLTADDR01" VARCHAR2(60 CHAR) NOT NULL ENABLE, 
+	"CLTADDR02" VARCHAR2(60 CHAR) NOT NULL ENABLE, 
+	"CLTADDR03" VARCHAR2(60 CHAR), 
+	"ZKANADDR01" VARCHAR2(30 CHAR) NOT NULL ENABLE, 
+	"ZKANADDR02" VARCHAR2(30 CHAR) NOT NULL ENABLE, 
+	"CLTSEX" VARCHAR2(1 CHAR) NOT NULL ENABLE, 
+	"ADDRTYPE" VARCHAR2(1 CHAR) DEFAULT ' ', 
+	"CLTPHONE01" VARCHAR2(16 CHAR) DEFAULT '       ' NOT NULL ENABLE, 
+	"CLTPHONE02" VARCHAR2(16 CHAR) DEFAULT '       ', 
+	"OCCPCODE" VARCHAR2(4 CHAR), 
+	"CLTDOB" NUMBER(8,0) NOT NULL ENABLE, 
+	"ZOCCDSC" VARCHAR2(50 CHAR) DEFAULT '                                                  ', 
+	"ZWORKPLCE" VARCHAR2(25 CHAR) DEFAULT '                         ', 
+	"ZALTRCDE01" VARCHAR2(4 CHAR), 
+	"TRANSHIST" VARCHAR2(1 CHAR) NOT NULL ENABLE, 
+	"ZENDCDE" VARCHAR2(20 CHAR) NOT NULL ENABLE, 
+	"CLNTROLEFLG" VARCHAR2(1 CHAR) NOT NULL ENABLE, 
+	"POLICYSTATUS" VARCHAR2(2 CHAR) NOT NULL ENABLE, 
+	"POLICYTYPE" VARCHAR2(2 CHAR) NOT NULL ENABLE, 
+	"PRIORTY" VARCHAR2(1 CHAR) NOT NULL ENABLE
+   );
+
+	
+	
+Drop table "Jd1dta"."IGNAYOSEVIEW" ;
+	CREATE TABLE "Jd1dta"."IGNAYOSEVIEW" 
+   (	
+    "UNIQUEID" NUMBER(*,0) GENERATED ALWAYS AS IDENTITY MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE , 
+	"ZENDCDE" VARCHAR2(20 CHAR), 
+    "CLNTNUM"	CHAR(8 CHAR),
+	"ZKANASNMNOR"	VARCHAR2(60 CHAR),
+	"ZKANAGNMNOR"	VARCHAR2(60 CHAR),
+	"CLTSEX"	CHAR(1 CHAR),
+	"CLTDOB"	NUMBER(8,0),
+	"CLTPCODE"	CHAR(10 CHAR),
+	"RMBLPHONE"	VARCHAR2(16 CHAR),
+    "CHDRNUM"  CHAR(8 CHAR) ,
+	"STATCODE" VARCHAR2(2 CHAR),
+	"ZPLANCLS" VARCHAR2(2 CHAR),
+	"PRIORITY"  VARCHAR2(1 CHAR),
+    "ROW_NUM" number
+   );
+     CREATE UNIQUE INDEX "Jd1dta"."UNI_NY_IGNAYO" ON "Jd1dta"."IGNAYOSEVIEW" ("CLNTNUM") ;
+	 
+	Drop table "Jd1dta"."DMPANAYOSEVIEW" ;
+	CREATE TABLE "Jd1dta"."DMPANAYOSEVIEW" 
+   (	
+    "UNIQUEID" NUMBER(*,0) GENERATED ALWAYS AS IDENTITY MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE , 
+	"ZENDCDE" VARCHAR2(20 CHAR), 
+    "CLNTNUM"	CHAR(8 CHAR),
+	"ZKANASNMNOR"	VARCHAR2(60 CHAR),
+	"ZKANAGNMNOR"	VARCHAR2(60 CHAR),
+	"CLTSEX"	CHAR(1 CHAR),
+	"CLTDOB"	NUMBER(8,0),
+	"CLTPCODE"	CHAR(10 CHAR),
+	"RMBLPHONE"	VARCHAR2(16 CHAR),
+    "CHDRNUM"  CHAR(8 CHAR) ,
+	"STATCODE" VARCHAR2(2 CHAR),
+	"ZPLANCLS" VARCHAR2(2 CHAR),
+	"PRIORITY"  VARCHAR2(1 CHAR),
+    "ROW_NUM" number
+   );
+     CREATE UNIQUE INDEX "Jd1dta"."UNI_NY_DMPANAYO" ON "Jd1dta"."DMPANAYOSEVIEW" ("CLNTNUM") ;
+	 
+	 
+	 
+	Drop table "Jd1dta"."PAZDNYPF" ;
+  CREATE TABLE "Jd1dta"."PAZDNYPF" 
+   (	
+    "UNIQUEID" NUMBER(*,0) GENERATED ALWAYS AS IDENTITY MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 3405289 CACHE 20 NOORDER  NOCYCLE , 
+	"PREFIX" VARCHAR2(2 CHAR), 
+	"DM_OR_IG" VARCHAR2(4 CHAR),
+    "CLNTSTAS" VARCHAR2(2 CHAR),
+	"IS_UPDATE_REQ" VARCHAR2(2 CHAR),
+	"ZENTITY" VARCHAR2(50 CHAR), 
+	"ZIGVALUE" VARCHAR2(50 CHAR), 
+	"JOBNUM" NUMBER(8,0), 
+	"JOBNAME" VARCHAR2(10 CHAR)
+   );
+     CREATE UNIQUE INDEX "Jd1dta"."UNI_NY_ZENT" ON "Jd1dta"."PAZDNYPF" ("ZENTITY") ;
+
+drop table "Jd1dta"."DMIGTITNYCLT" ;
+CREATE TABLE "Jd1dta"."DMIGTITNYCLT" 
+   (	
+   "UNIQUEID" NUMBER(*,0) GENERATED ALWAYS AS IDENTITY MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER  NOCYCLE  NOKEEP  NOSCALE  NOT NULL ENABLE, 
+	"REFNUM" VARCHAR2(10 CHAR), 
+    "DM_OR_IG" VARCHAR2(4 CHAR),
+    "CLNTSTAS" VARCHAR2(2 CHAR),
+	"IS_UPDATE_REQ" VARCHAR2(2 CHAR),
+	"IG_CLNTNUM" VARCHAR2(8 CHAR), 
+	"DCH_ZENDCDE" VARCHAR2(20 CHAR), 
+	"DCH_ZKANASNMNOR" VARCHAR2(4000 CHAR), 
+	"DCH_ZKANAGNMNOR" VARCHAR2(4000 CHAR), 
+	"DCH_CLTDOB" VARCHAR2(40 BYTE), 
+	"DCH_CLTPCODE" VARCHAR2(10 CHAR), 
+	"DCH_CLTSEX" VARCHAR2(1 CHAR), 
+	"DCH_CLTPHONE01" VARCHAR2(64 BYTE),
+    DCH_PRIORITY VARCHAR2(1 CHAR), 
+    NV_PRIORITY VARCHAR2(1 CHAR)
+   ) ;
+
+  CREATE UNIQUE INDEX "Jd1dta"."UNI_NY_REFNUM" ON "Jd1dta"."DMIGTITNYCLT" ("REFNUM") ;
+
+
+DROP TABLE "Jd1dta"."DMUNIEQUENOUPDT" ;
+
+  CREATE TABLE "Jd1dta"."DMUNIEQUENOUPDT" 
+   (	"CHDRNUM" VARCHAR2(8 CHAR) NOT NULL ENABLE, 
+	"CLNTNUM" CHAR(8 CHAR) NOT NULL ENABLE, 
+	"TRANNO" NUMBER(5,0) NOT NULL ENABLE, 
+	"EFFDATE" NUMBER(8,0) NOT NULL ENABLE, 
+	"TABLE_NAME" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"TAB_UNIQUE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	"ZCLN_UNIQUE" VARCHAR2(20 BYTE) NOT NULL ENABLE, 
+	 CONSTRAINT "DMUNIEQUENOUPDT_UK1" UNIQUE ("TABLE_NAME", "TAB_UNIQUE")
+   );
+
+  CREATE INDEX "Jd1dta"."DMUNIEQUENOUPDT_INDEX1" ON "Jd1dta"."DMUNIEQUENOUPDT" ("TAB_UNIQUE") ;
+
+  CREATE INDEX "Jd1dta"."DMUNIEQUENOUPDT_INDEX2" ON "Jd1dta"."DMUNIEQUENOUPDT" ("TABLE_NAME");
+
+----
+
+CREATE OR REPLACE FORCE EDITIONABLE VIEW "Jd1dta"."VIEW_DM_PAZDNYPF"  ("PREFIX", "DM_OR_IG", "CLNTSTAS", "IS_UPDATE_REQ","ZENTITY","ZIGVALUE","JOBNUM","JOBNAME")AS
+SELECT  
+  "PREFIX", 
+  "DM_OR_IG",
+  "CLNTSTAS", 
+  "IS_UPDATE_REQ",
+  "ZENTITY",
+  "ZIGVALUE", 
+  "JOBNUM",
+  "JOBNAME"
+FROM Jd1dta.PAZDNYPF;

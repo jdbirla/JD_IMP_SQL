@@ -1,0 +1,15 @@
+*************************************************************************
+**********************Pre-Validation Stats:******************************
+*************************************************************************
+
+
+******************Pre-Validation Stats: : START *************************
+Schedule Name   :G1ZDAGENCY
+Schedule Number :0095
+Stage Table Name:'TITDMGAGENTPJ'
+Error Count     :1
+Success Count   :20
+Total Count     :21
+******************Pre-Validation Stats: : END ****************************
+
+

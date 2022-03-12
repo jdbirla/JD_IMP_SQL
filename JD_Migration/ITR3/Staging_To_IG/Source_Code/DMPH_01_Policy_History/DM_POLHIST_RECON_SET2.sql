@@ -1,0 +1,1823 @@
+create or replace PROCEDURE  DM_POLHIST_RECON_SET2(p_detail_batch_id IN VARCHAR2,
+                                                    p_summary_batch_id IN VARCHAR2) 
+AS
+  /*
+  **************************************************************************************************
+  * Amendment History: Memeber Individual Policy History Reconcillation set 2
+  * Date    Init   Tag   Decription
+  * -----   -----  ---   ---------------------------------------------------------------------------
+  * MMMDD   XXX    PH0   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  * NOV09	MKS	   PH1   Initial Version
+  * MAR15   JAY    PH2   Recon Set 2 code for Direct mapping columns
+  ***********************************************************************************************/
+ cur_limit      PLS_INTEGER     := 1000;
+ v_prog_name    VARCHAR2(50)    := 'DM_POLHIST_RECON_SET2';
+ v_crtd_by      VARCHAR2(20)    := 'JPAFSN';
+ v_module_name  VARCHAR2(40)    := 'Member and Individual Policy History';
+ 
+ v_chdrnum      VARCHAR2(20);
+ v_tranno       VARCHAR2(10);
+ v_src_val      VARCHAR2(30);
+ v_stg_val      VARCHAR2(30);
+ v_ig_val       VARCHAR2(30);
+ v_src_sumin    VARCHAR2(30);
+ v_src_prem     VARCHAR2(30);
+ v_stg_sumin    VARCHAR2(30);
+ v_stg_prem     VARCHAR2(30);
+ v_ig_sumin1    VARCHAR2(30);
+ v_ig_prem1     VARCHAR2(30);
+ v_ig_sumin2    VARCHAR2(30);
+ v_ig_prem2     VARCHAR2(30); 
+ v_eff_date     NUMBER;
+ 
+ 
+ v_err_seq      NUMBER;
+ v_err_code     NUMBER;
+ v_err_msg      VARCHAR2(500);
+ 
+ obj_recon_tbl Jd1dta.view_dm_pol_mihis_recon_det%ROWTYPE;
+/*
+ CURSOR main_cur IS
+    SELECT * FROM dm_policy_recon@DMSTGUSR2DBLINK;
+
+ TYPE typ_attr_cur IS TABLE OF main_cur%ROWTYPE;
+ mcur_data typ_attr_cur; */
+ 
+ -- recon set 2: record wise : START : 20210315
+    lv_err_cnt  INTEGER(1)    := 0;
+	lv_record_key  VARCHAR(50 CHAR);
+    lv_record_key_stg  VARCHAR(50 CHAR);
+    lv_record_key_vm1dta  VARCHAR(50 CHAR);
+
+    lv_attrib_name      Jd1dta.dm_data_validation_attrib.v_attrib_name%type;
+    lv_pol_attrb_des    Jd1dta.dm_data_validation_attrib.v_attrib_desc%type;
+
+    lv_chdrnum         Jd1dta.dm_pol_mihis_recon_det.V_POLICY_NO%type;
+    lv_src_val          Jd1dta.dm_pol_mihis_recon_det.v_src_val%type;
+    lv_stg_val          Jd1dta.dm_pol_mihis_recon_det.v_stg_val%type;
+    lv_ig_val           Jd1dta.dm_pol_mihis_recon_det.v_ig_val%type;
+    lv_batch_id         Jd1dta.dm_pol_mihis_recon_det.v_batch_id%type := p_detail_batch_id;
+    lv_summary_batch_id Jd1dta.dm_pol_mihis_recon_det.v_summary_batch_id%type := p_summary_batch_id;
+    lv_mod_name         Jd1dta.dm_pol_mihis_recon_det.v_module_name%type := 'Member and Individual Policy History';
+    lv_prod_cde         Jd1dta.dm_pol_mihis_recon_det.v_prod_cde%type;
+    lv_pol_commdt         Jd1dta.dm_pol_mihis_recon_det.v_pol_commdt%type;
+    lv_pol_status         Jd1dta.dm_pol_mihis_recon_det.v_pol_status%type;
+    lv_eff_date         Jd1dta.dm_pol_mihis_recon_det.v_eff_date%type;
+    lv_eff_desc         Jd1dta.dm_pol_mihis_recon_det.v_eff_desc%type;
+
+    lv_polhist_ztra_chdrnum     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_CHDRNUM';
+    lv_polhist_ztra_tranno      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_TRANNO';
+
+    lv_polhist_ztra_effdate     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_EFFDATE';  -- effdate
+    lv_polhist_ztra_ZALTREGDAT  CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_ZALTREGDAT'; -- ZALTREGDAT
+    lv_polhist_ztra_DOCRCDTE    CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_DOCRCDTE';  -- DOCRCDTE
+    lv_polhist_ztra_HPROPDTE    CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_HPROPDTE';  -- HPROPDTE
+    lv_polhist_ztra_ZTRXSTAT    CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_ZTRXSTAT';  -- ZTRXSTAT
+    lv_polhist_ztra_ZSTATRESN   CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_ZSTATRESN';  -- ZSTATRESN
+    lv_polhist_ztra_ZACLSDAT    CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_ZACLSDAT'; -- ZACLSDAT
+    lv_polhist_ztra_APPRDTE     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTRA_APPRDTE'; -- APPRDTE
+
+    lv_polhist_zaltpf_tranno        CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZALTPF_TRANNO'; -- TRNNO
+    lv_polhist_zaltpf_zcmpcode      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZALTPF_ZCMPCODE'; -- ZCMPCODE
+    lv_polhist_zaltpf_zcpnscde      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZALTPF_ZCPNSCDE'; -- ZCPNSCDE
+    lv_polhist_zaltpf_crdtcard      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZALTPF_CRDTCARD'; -- CRDTCARD
+    lv_polhist_zaltpf_bnkacckey01   CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZALTPF_BNKACCKEY01'; -- BNKACCKEY01
+    lv_polhist_zaltpf_bankkey       CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZALTPF_BANKKEY'; -- BANKKEY
+    lv_polhist_zaltpf_preautno      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZALTPF_PREAUTNO'; -- PREAUTNO
+    lv_polhist_zaltpf_bankaccdsc01  CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZALTPF_BANKACCDSC01'; -- BANKACCDSC01
+
+	lv_polhist_zinsdts_mbrno        CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZINSDTLS_MBRNO'; -- TRNNO
+	lv_polhist_zinsdts_cltreln      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZINSDTLS_CLTRELN'; -- CLTRELN
+	lv_polhist_zinsdts_zplancde     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZINSDTLS_ZPLANCDE'; -- ZPLANCDE
+	lv_polhist_zinsdts_zworkplce2   CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZINSDTLS_ZWORKPLCE2'; -- ZWORKPLCE2
+	lv_polhist_zinsdts_effdate      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZINSDTLS_EFFDATE'; -- EFFDATE
+	lv_polhist_zinsdts_zinsrole     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZINSDTLS_ZINSROLE'; -- ZINSROLE
+
+    lv_polhist_ZMCIPF_TRNNO        CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZMCIPF_CHDRNUM'; -- CHDRNUM
+    lv_polhist_ZMCIPF_BANKKEY      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZMCIPF_BANKKEY'; -- BANKKEY
+    lv_polhist_ZMCIPF_BNKACTYP01   CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZMCIPF_BNKACTYP01'; -- BNKACTYP01
+    lv_polhist_ZMCIPF_PREAUTNO     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZMCIPF_PREAUTNO'; -- PREAUTNO
+    lv_polhist_ZMCIPF_EFFDATE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZMCIPF_EFFDATE'; -- EFFDATE
+    lv_polhist_ZMCIPF_ZDDREQNO     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZMCIPF_ZDDREQNO'; -- ZDDREQNO
+
+    lv_polhist_ZBENF_TRNNO       CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZBENF_TRNNO'; -- TRNNO
+    lv_polhist_ZBENF_EFFDATE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZBENF_EFFDATE'; -- EFFDATE
+    lv_polhist_ZBENF_ZKNJFULNM      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZBENF_ZKNJFULNM'; -- ZKNJFULNM
+    lv_polhist_ZBENF_CLTADDR01   CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZBENF_CLTADDR01'; -- CLTADDR01
+    lv_polhist_ZBENF_BNYPC     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZBENF_BNYPC'; -- BNYPC
+    lv_polhist_ZBENF_BNYRLN     CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZBENF_BNYRLN'; -- BNYRLN
+
+	lv_polhist_ZTEMPCOV_PRODTYP       CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTEMPCOV_PRODTYP'; -- PRODTYP
+	lv_polhist_ZTEMPCOV_EFFDATE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTEMPCOV_EFFDATE'; --EFFDATE
+	lv_polhist_ZTEMPCOV_DTEATT      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTEMPCOV_DTEATT'; -- DTEATT
+	lv_polhist_ZTEMPCOV_SUMINS      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTEMPCOV_SUMINS'; -- SUMINS
+	lv_polhist_ZTEMPCOV_DSUMIN      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTEMPCOV_DSUMIN'; -- DSUMIN
+	lv_polhist_ZTEMPCOV_ZINSTYPE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZTEMPCOV_ZINSTYPE'; -- ZINSTYPE
+
+    lv_POLHIST_ZSUBCOV_PRODTYP02       CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZSUBCOV_PRODTYP02'; -- PRODTYP02
+	lv_POLHIST_ZSUBCOV_EFFDATE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZSUBCOV_EFFDATE'; --EFFDATE
+	lv_POLHIST_ZSUBCOV_DPREM      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZSUBCOV_DPREM'; -- DPREM
+
+    lv_polhist_GXHI_PRODTYP      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_GXHI_PRODTYP'; -- PRODTYP
+	lv_polhist_GXHI_EFFDATE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_GXHI_EFFDATE'; --EFFDATE
+	lv_polhist_GXHI_SUMINSU      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_GXHI_SUMINSU'; -- SUMINSU
+	lv_polhist_GXHI_ZINSTYPE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_GXHI_ZINSTYPE'; -- ZINSTYPE
+	lv_polhist_GXHI_ZTAXFLG      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_GXHI_ZTAXFLG'; -- ZTAXFLG
+
+    lv_polhist_ZODMPRMVER_ZINSTYPE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZODMPRMVER_ZINSTYPE'; -- ZINSTYPE
+    lv_polhist_ZODMPRMVER_CHDRNUM      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZODMPRMVER_CHDRNUM'; -- CHDRNUM
+
+    lv_polhist_ZAPIRNO_ZINSTYPE      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZAPIRNO_ZINSTYPE'; -- ZINSTYPE
+    lv_polhist_ZAPIRNO_ZAPIRNO      CONSTANT VARCHAR(50 CHAR) := 'POLHIST_ZAPIRNO_ZAPIRNO'; -- ZAPIRNO
+
+--- cursor for ZTRAPF
+CURSOR  cur_ztrapf is (
+    SELECT
+     TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+
+    , TRIM(SRC.CHDRNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO, TRIM(SRC.EFFDATE) SRC_EFFDATE, TRIM(SRC.CLIENT_CATEGORY) SRC_CLIENT_CATEGORY, TRIM(SRC.MBRNO) SRC_MBRNO
+    , TRIM(SRC.ZALTREGDAT) SRC_ZALTREGDAT , TRIM(SRC.ZACLSDAT) SRC_ZACLSDAT ,  TRIM(SRC.ZTRXSTAT) SRC_ZTRXSTAT
+    , TRIM(SRC.ZSTATRESN) SRC_ZSTATRESN ,  TRIM(SRC.APPRDTE) SRC_APPRDTE
+
+	, TRIM(STG.CHDRNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO ,  TRIM(STG.EFFDATE) STG_EFFDATE , TRIM(STG.CLIENT_CATEGORY) STG_CLIENT_CATEGORY , TRIM(STG.MBRNO)  STG_MBRNO
+    , TRIM(STG.ZALTREGDAT) STG_ZALTREGDAT , TRIM(STG.ZACLSDAT) STG_ZACLSDAT ,  TRIM(STG.ZTRXSTAT) STG_ZTRXSTAT , TRIM(STG.ZSTATRESN) STG_ZSTATRESN ,  TRIM(STG.APPRDTE)  STG_APPRDTE
+
+	, TRIM(ZTRA.CHDRNUM) ZTRA_CHDRNUM, TRIM(ZTRA.TRANNO) ZTRA_TRANNO, TRIM(ZTRA.TRANCDE) ZTRA_TRANCDE
+    , TRIM(ZTRA.EFFDATE) ZTRA_EFFDATE, TRIM(ZTRA.ZALTREGDAT) ZTRA_ZALTREGDAT, TRIM(ZTRA.DOCRCDTE) ZTRA_DOCRCDTE,  TRIM(ZTRA.HPROPDTE) ZTRA_HPROPDTE,  TRIM(ZTRA.ZTRXSTAT) ZTRA_ZTRXSTAT
+	, TRIM(ZTRA.ZSTATRESN) ZTRA_ZSTATRESN , TRIM(ZTRA.ZACLSDAT) ZTRA_ZACLSDAT, TRIM(ZTRA.APPRDTE) ZTRA_APPRDTE
+
+    FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+    LEFT OUTER JOIN STAGEDBUSR2.TITDMGPOLTRNH@DMSTAGEDBLINK SRC ON (TRIM(SRC.CHDRNUM) =   TRIM(POL.V_POLICY_NO) )
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGPOLTRNH@DMSTAGEDBLINK STG ON (TRIM(STG.CHDRNUM) = TRIM(SRC.CHDRNUM) AND TRIM(STG.ZSEQNO) = TRIM(SRC.ZSEQNO) AND TRIM(STG.MBRNO)  = TRIM(SRC.MBRNO)  )
+    LEFT OUTER JOIN Jd1dta.ZTRAPF ZTRA ON (TRIM(ZTRA.CHDRNUM) = TRIM(STG.CHDRNUM) AND TRIM(ZTRA.TRANNO) = TRIM(STG.TRANNO) )
+        WHERE 1=1
+        AND  TRIM(SRC.MBRNO) = '00001'
+);
+
+TYPE typ_cur_ztrapf IS TABLE OF cur_ztrapf%ROWTYPE;
+typ_cur_ztrapf_data typ_cur_ztrapf;
+
+
+--- cursor for ZALTPF
+CURSOR  cur_zaltpf is (
+     SELECT
+     TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+
+    , TRIM(SRC.CHDRNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO , TRIM(SRC.EFFDATE) SRC_EFFDATE
+	, TRIM(SRC.ZCMPCODE) SRC_ZCMPCODE , TRIM(SRC.ZCPNSCDE ) SRC_ZCPNSCDE , TRIM(SRC.CRDTCARD ) SRC_CRDTCARD , TRIM(SRC.BNKACCKEY01 ) SRC_BNKACCKEY01
+	, TRIM(SRC.BANKKEY ) SRC_BANKKEY , TRIM(SRC.PREAUTNO ) SRC_PREAUTNO  , TRIM(SRC.BANKACCDSC01 ) SRC_BANKACCDSC01
+
+	, TRIM(STG.CHDRNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO
+	,  TRIM(STG.ZCMPCODE) STG_ZCMPCODE ,  TRIM(STG.ZCPNSCDE) STG_ZCPNSCDE ,  TRIM(STG.CRDTCARD) STG_CRDTCARD ,  TRIM(STG.BNKACCKEY01) STG_BNKACCKEY01
+	,  TRIM(STG.BANKKEY) STG_BANKKEY ,  TRIM(STG.PREAUTNO) STG_PREAUTNO ,  TRIM(STG.BANKACCDSC01) STG_BANKACCDSC01
+
+	, TRIM(ZALT.CHDRNUM) ZALT_CHDRNUM, TRIM(ZALT.TRANNO) ZALT_TRANNO
+    , TRIM(ZALT.ZCMPCODE) ZALT_ZCMPCODE, TRIM(ZALT.ZCPNSCDE) ZALT_ZCPNSCDE, TRIM(ZALT.CRDTCARD) ZALT_CRDTCARD,  TRIM(ZALT.BNKACCKEY01) ZALT_BNKACCKEY01
+	,  TRIM(ZALT.BANKKEY) ZALT_BANKKEY,  TRIM(ZALT.PREAUTNO) ZALT_PREAUTNO, TRIM(ZALT.BANKACCDSC01) ZALT_BANKACCDSC01
+
+    FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+    LEFT OUTER JOIN STAGEDBUSR2.TITDMGPOLTRNH@DMSTAGEDBLINK SRC ON (TRIM(SRC.CHDRNUM) =   TRIM(POL.V_POLICY_NO) )
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGPOLTRNH@DMSTAGEDBLINK STG ON (TRIM(STG.CHDRNUM) = TRIM(SRC.CHDRNUM) AND TRIM(STG.ZSEQNO) = TRIM(SRC.ZSEQNO) AND TRIM(STG.MBRNO)  = TRIM(SRC.MBRNO)  )
+    LEFT OUTER JOIN Jd1dta.ZALTPF ZALT ON (TRIM(ZALT.CHDRNUM) = TRIM(STG.CHDRNUM) AND TRIM(ZALT.TRANNO) = TRIM(STG.TRANNO) )
+        WHERE 1=1
+        AND  TRIM(SRC.MBRNO) = '00001'
+);
+
+TYPE typ_cur_zaltpf IS TABLE OF cur_zaltpf%ROWTYPE;
+typ_cur_zaltpf_data typ_cur_zaltpf;
+
+
+
+--- cursor for ZINSDTLSPF
+CURSOR  cur_zinsdtls is (
+	SELECT
+    TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+
+    , TRIM(SRC.CHDRNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO, TRIM(SRC.MBRNO) SRC_MBRNO
+	, TRIM(SRC.CLTRELN) SRC_CLTRELN  , TRIM(SRC.ZPLANCDE) SRC_ZPLANCDE , TRIM(SRC.ZWORKPLCE2) SRC_ZWORKPLCE2
+	, TRIM(SRC.EFFDATE) SRC_EFFDATE , TRIM(SRC.ZINSROLE) SRC_ZINSROLE
+
+	, TRIM(STG.CHDRNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO  , TRIM(STG.MBRNO) STG_MBRNO
+	, TRIM(STG.CLTRELN) STG_CLTRELN , TRIM(STG.ZPLANCDE) STG_ZPLANCDE , TRIM(STG.ZWORKPLCE2) STG_ZWORKPLCE2
+	, TRIM(STG.EFFDATE) STG_EFFDATE , TRIM(STG.ZINSROLE) STG_ZINSROLE
+
+	, TRIM(ZINS.CHDRNUM) ZINS_CHDRNUM, TRIM(ZINS.TRANNO) ZINS_TRANNO , TRIM(ZINS.MBRNO) ZINS_MBRNO
+    , TRIM(ZINS.CLTRELN) ZINS_CLTRELN , TRIM(ZINS.ZPLANCDE) ZINS_ZPLANCDE , TRIM(ZINS.ZWORKPLCE2) ZINS_ZWORKPLCE2
+	, TRIM(ZINS.EFFDATE) ZINS_EFFDATE , TRIM(ZINS.ZINSROLE) ZINS_ZINSROLE
+
+    FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+    LEFT OUTER JOIN STAGEDBUSR2.TITDMGPOLTRNH@DMSTAGEDBLINK SRC ON (TRIM(SRC.CHDRNUM) =   TRIM(POL.V_POLICY_NO) )
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGPOLTRNH@DMSTAGEDBLINK STG ON ( TRIM(STG.CHDRNUM) = TRIM(SRC.CHDRNUM) AND TRIM(STG.ZSEQNO) = TRIM(SRC.ZSEQNO) AND TRIM(STG.MBRNO)  = TRIM(SRC.MBRNO)  )
+    LEFT OUTER JOIN Jd1dta.ZINSDTLSPF ZINS ON (TRIM(ZINS.CHDRNUM) = TRIM(STG.CHDRNUM) AND TRIM(ZINS.TRANNO) = TRIM(STG.TRANNO) AND TRIM(ZINS.MBRNO) = TRIM(STG.MBRNO) )
+    WHERE 1=1
+
+);
+
+TYPE typ_cur_zinsdtls IS TABLE OF cur_zinsdtls%ROWTYPE;
+typ_cur_zinsdtls_data typ_cur_zinsdtls;
+
+
+--- cursor for ZMCIPF
+CURSOR  cur_zmcipf is (
+	SELECT
+    TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+
+    ,  TRIM(SRC.CHDRNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO, TRIM(SRC.MBRNO) SRC_MBRNO, TRIM(SRC.ZALTRCDE01) SRC_ZALTRCDE01
+	, TRIM(SRC.BANKKEY) SRC_BANKKEY  , TRIM(SRC.BNKACTYP01) SRC_BNKACTYP01  , TRIM(SRC.PREAUTNO) SRC_PREAUTNO
+	, TRIM(SRC.EFFDATE) SRC_EFFDATE  , TRIM(SRC.ZDDREQNO) SRC_ZDDREQNO
+
+	, TRIM(STG.CHDRNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO
+	, TRIM(STG.BANKKEY) STG_BANKKEY , TRIM(STG.BNKACTYP01) STG_BNKACTYP01 , TRIM(STG.PREAUTNO) STG_PREAUTNO
+	, TRIM(STG.EFFDATE) STG_EFFDATE , TRIM(STG.ZDDREQNO) STG_ZDDREQNO
+
+	, TRIM(ZMCI.CHDRNUM) ZMCI_CHDRNUM, TRIM(ZMCI.TRANNO) ZMCI_TRANNO
+    , TRIM(ZMCI.BANKKEY) ZMCI_BANKKEY , TRIM(ZMCI.BNKACTYP01) ZMCI_BNKACTYP01 , TRIM(ZMCI.PREAUTNO) ZMCI_PREAUTNO
+	, TRIM(ZMCI.EFFDATE) ZMCI_EFFDATE , TRIM(ZMCI.ZDDREQNO) ZMCI_ZDDREQNO
+
+	FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+    LEFT OUTER JOIN STAGEDBUSR2.TITDMGPOLTRNH@DMSTAGEDBLINK SRC ON (TRIM(SRC.CHDRNUM) =   TRIM(POL.V_POLICY_NO) )
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGPOLTRNH@DMSTAGEDBLINK STG ON ( TRIM(STG.CHDRNUM) = TRIM(SRC.CHDRNUM) AND TRIM(STG.ZSEQNO) = TRIM(SRC.ZSEQNO) AND TRIM(STG.MBRNO)  = TRIM(SRC.MBRNO)  )
+    LEFT OUTER JOIN Jd1dta.ZMCIPF ZMCI ON (TRIM(ZMCI.CHDRNUM) = TRIM(STG.CHDRNUM) AND TRIM(ZMCI.TRANNO) = TRIM(STG.TRANNO)  )
+    WHERE 1=1
+    and  trim(src.zaltrcde01) in ('M01', 'M02', 'M04')
+    and  TRIM(SRC.MBRNO) = '00001'
+
+);
+
+TYPE typ_cur_zmci IS TABLE OF cur_zmcipf%ROWTYPE;
+typ_cur_zmci_data typ_cur_zmci;
+
+
+--- cursor for ZBENFDTLSPF
+CURSOR  cur_zbenfdtlspf is (
+	SELECT
+    TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+    ,  TRIM(SRC.CHDRNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO, TRIM(SRC.MBRNO) SRC_MBRNO , TRIM(SRC.EFFDATE) SRC_EFFDATE
+    , CASE
+        WHEN (TRIM(SRC.B1_ZKNJFULNM) IS NOT NULL) THEN SRC.B1_ZKNJFULNM
+        WHEN (TRIM(SRC.B2_ZKNJFULNM) IS NOT NULL) THEN SRC.B2_ZKNJFULNM
+        WHEN (TRIM(SRC.B3_ZKNJFULNM) IS NOT NULL) THEN SRC.B3_ZKNJFULNM
+        WHEN (TRIM(SRC.B4_ZKNJFULNM) IS NOT NULL) THEN SRC.B4_ZKNJFULNM
+        WHEN (TRIM(SRC.B5_ZKNJFULNM) IS NOT NULL) THEN SRC.B5_ZKNJFULNM
+     END AS SRC_ZKNJFULNM
+    , CASE
+        WHEN (TRIM(SRC.B1_CLTADDR01) IS NOT NULL) THEN SRC.B1_CLTADDR01
+        WHEN (TRIM(SRC.B2_CLTADDR01) IS NOT NULL) THEN SRC.B2_CLTADDR01
+        WHEN (TRIM(SRC.B3_CLTADDR01) IS NOT NULL) THEN SRC.B3_CLTADDR01
+        WHEN (TRIM(SRC.B4_CLTADDR01) IS NOT NULL) THEN SRC.B4_CLTADDR01
+        WHEN (TRIM(SRC.B5_CLTADDR01) IS NOT NULL) THEN SRC.B5_CLTADDR01
+     END AS SRC_CLTADDR01
+    , CASE
+        WHEN (TRIM(SRC.B1_BNYPC) IS NOT NULL) THEN SRC.B1_BNYPC
+        WHEN (TRIM(SRC.B2_BNYPC) IS NOT NULL) THEN SRC.B2_BNYPC
+        WHEN (TRIM(SRC.B2_BNYPC) IS NOT NULL) THEN SRC.B2_BNYPC
+        WHEN (TRIM(SRC.B4_BNYPC) IS NOT NULL) THEN SRC.B4_BNYPC
+        WHEN (TRIM(SRC.B5_BNYPC) IS NOT NULL) THEN SRC.B5_BNYPC
+     END AS SRC_BNYPC
+	 , CASE
+        WHEN (TRIM(SRC.B1_BNYRLN) IS NOT NULL) THEN SRC.B1_BNYRLN
+        WHEN (TRIM(SRC.B2_BNYRLN) IS NOT NULL) THEN SRC.B2_BNYRLN
+        WHEN (TRIM(SRC.B2_BNYRLN) IS NOT NULL) THEN SRC.B2_BNYRLN
+        WHEN (TRIM(SRC.B4_BNYRLN) IS NOT NULL) THEN SRC.B4_BNYRLN
+        WHEN (TRIM(SRC.B5_BNYRLN) IS NOT NULL) THEN SRC.B5_BNYRLN
+     END AS SRC_BNYRLN
+
+
+	 , TRIM(STG.CHDRNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO  , TRIM(STG.MBRNO) STG_MBRNO,  TRIM(STG.EFFDATE) STG_EFFDATE
+     , CASE
+        WHEN (TRIM(SRC.B1_ZKNJFULNM) IS NOT NULL) THEN STG.B1_ZKNJFULNM   -- CHECK NULLL AGAINST  SOURCE VALUE
+        WHEN (TRIM(SRC.B2_ZKNJFULNM) IS NOT NULL) THEN STG.B2_ZKNJFULNM
+        WHEN (TRIM(SRC.B3_ZKNJFULNM) IS NOT NULL) THEN STG.B3_ZKNJFULNM
+        WHEN (TRIM(SRC.B4_ZKNJFULNM) IS NOT NULL) THEN STG.B4_ZKNJFULNM
+        WHEN (TRIM(SRC.B5_ZKNJFULNM) IS NOT NULL) THEN STG.B5_ZKNJFULNM
+     END AS STG_ZKNJFULNM
+      , CASE
+        WHEN (TRIM(SRC.B1_CLTADDR01) IS NOT NULL) THEN STG.B1_CLTADDR01
+        WHEN (TRIM(SRC.B2_CLTADDR01) IS NOT NULL) THEN STG.B2_CLTADDR01
+        WHEN (TRIM(SRC.B3_CLTADDR01) IS NOT NULL) THEN STG.B3_CLTADDR01
+        WHEN (TRIM(SRC.B4_CLTADDR01) IS NOT NULL) THEN STG.B4_CLTADDR01
+        WHEN (TRIM(SRC.B5_CLTADDR01) IS NOT NULL) THEN STG.B5_CLTADDR01
+     END AS STG_CLTADDR01
+    , CASE
+        WHEN (TRIM(SRC.B1_BNYPC) IS NOT NULL) THEN STG.B1_BNYPC
+        WHEN (TRIM(SRC.B2_BNYPC) IS NOT NULL) THEN STG.B2_BNYPC
+        WHEN (TRIM(SRC.B2_BNYPC) IS NOT NULL) THEN STG.B2_BNYPC
+        WHEN (TRIM(SRC.B4_BNYPC) IS NOT NULL) THEN STG.B4_BNYPC
+        WHEN (TRIM(SRC.B5_BNYPC) IS NOT NULL) THEN STG.B5_BNYPC
+     END AS STG_BNYPC
+	  , CASE
+        WHEN (TRIM(SRC.B1_BNYRLN) IS NOT NULL) THEN STG.B1_BNYRLN
+        WHEN (TRIM(SRC.B2_BNYRLN) IS NOT NULL) THEN STG.B2_BNYRLN
+        WHEN (TRIM(SRC.B2_BNYRLN) IS NOT NULL) THEN STG.B2_BNYRLN
+        WHEN (TRIM(SRC.B4_BNYRLN) IS NOT NULL) THEN STG.B4_BNYRLN
+        WHEN (TRIM(SRC.B5_BNYRLN) IS NOT NULL) THEN STG.B5_BNYRLN
+     END AS STG_BNYRLN
+
+	, TRIM(ZBENF.CHDRNUM) ZBENF_CHDRNUM, TRIM(ZBENF.TRANNO) ZBENF_TRANNO , TRIM(ZBENF.MBRNO) ZBENF_MBRNO , TRIM(ZBENF.SEQNUMB) ZBENF_SEQNUMB, TRIM(ZBENF.EFFDATE) ZBENF_EFFDATE
+    , TRIM(ZBENF.ZKNJFULNM) ZBENF_ZKNJFULNM , TRIM(ZBENF.CLTADDR01) ZBENF_CLTADDR01, TRIM(ZBENF.BNYPC) ZBENF_BNYPC, TRIM(ZBENF.BNYRLN) ZBENF_BNYRLN
+
+    FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+    LEFT OUTER JOIN STAGEDBUSR2.TITDMGPOLTRNH@DMSTAGEDBLINK SRC ON (TRIM(SRC.CHDRNUM) =   TRIM(POL.V_POLICY_NO) )
+
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGPOLTRNH@DMSTAGEDBLINK STG ON ( TRIM(STG.CHDRNUM) = TRIM(SRC.CHDRNUM) AND TRIM(STG.ZSEQNO) = TRIM(SRC.ZSEQNO) AND TRIM(STG.MBRNO)  = TRIM(SRC.MBRNO)  )
+    LEFT OUTER JOIN Jd1dta.ZBENFDTLSPF ZBENF ON (TRIM(ZBENF.CHDRNUM) = TRIM(STG.CHDRNUM) AND TRIM(ZBENF.TRANNO) = TRIM(STG.TRANNO) AND TRIM(ZBENF.MBRNO) = TRIM(STG.MBRNO) )
+    LEFT OUTER JOIN Jd1dta.ZTRAPF ZTRA ON (TRIM(ZTRA.CHDRNUM) = TRIM(STG.CHDRNUM) AND TRIM(ZTRA.TRANNO) = TRIM(STG.TRANNO) )
+    WHERE 1=1
+    AND ( ZTRA.TRANCDE in ( 'T902','T928' ) OR ztra.zaltrcde01 = 'N10' ) -- Benificary details is migrated only for NB, Renewal or N10 altertaions only
+);
+
+TYPE typ_cur_ZBENF IS TABLE OF cur_zbenfdtlspf%ROWTYPE;
+typ_cur_zbenf_data typ_cur_zbenf;
+
+
+
+--- cursor for ZTEMPCOVPF
+CURSOR  cur_ZTEMPCOV is (
+	SELECT
+    TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+    ,  TRIM(SRC.REFNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO, TRIM(SRC.MBRNO) SRC_MBRNO
+    ,  TRIM(SRC.DPNTNO) SRC_DPNTNO, TRIM(SRC.PRODTYP) SRC_PRODTYP
+    ,  TRIM(SRC.EFFDATE) SRC_EFFDATE ,  TRIM(SRC.EFFDATE) SRC_DTEATT
+    ,  TRIM(SRC.HSUMINSU) SRC_SUMINS,  TRIM(SRC.HSUMINSU) SRC_DSUMIN
+    ,  TRIM(SRC.ZINSTYPE) SRC_ZINSTYPE
+
+    , TRIM(STG.REFNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO , TRIM(STG.MBRNO) STG_MBRNO
+    , TRIM(STG.DPNTNO) STG_DPNTNO , TRIM(STG.PRODTYP) STG_PRODTYP
+    , TRIM(STG.EFFDATE) STG_EFFDATE , TRIM(STG.EFFDATE) STG_DTEATT
+    , TRIM(STG.HSUMINSU) STG_SUMINS, TRIM(STG.HSUMINSU) STG_DSUMIN
+    , TRIM(STG.ZINSTYPE) STG_ZINSTYPE
+
+	, TRIM(ZTEMPCOV.CHDRNUM) ZTEMPCOV_CHDRNUM, TRIM(ZTEMPCOV.TRANNO) ZTEMPCOV_TRANNO , TRIM(ZTEMPCOV.MBRNO) ZTEMPCOV_MBRNO
+    , TRIM(ZTEMPCOV.DPNTNO) ZTEMPCOV_DPNTNO , TRIM(ZTEMPCOV.PRODTYP) ZTEMPCOV_PRODTYP
+    , TRIM(ZTEMPCOV.EFFDATE) ZTEMPCOV_EFFDATE , TRIM(ZTEMPCOV.DTEATT) ZTEMPCOV_DTEATT
+    , TRIM(ZTEMPCOV.SUMINS) ZTEMPCOV_SUMINS   , TRIM(ZTEMPCOV.DSUMIN) ZTEMPCOV_DSUMIN
+    , TRIM(ZTEMPCOV.ZINSTYPE) ZTEMPCOV_ZINSTYPE
+
+	FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+    LEFT OUTER JOIN STAGEDBUSR2.TITDMGMBRINDP2@DMSTAGEDBLINK SRC ON (TRIM(SRC.REFNUM) =   TRIM(POL.V_POLICY_NO) )
+
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGMBRINDP2@DMSTAGEDBLINK STG ON ( TRIM(STG.REFNUM)=TRIM(SRC.REFNUM) AND TRIM(STG.ZSEQNO)=TRIM(SRC.ZSEQNO)
+                                AND TRIM(STG.MBRNO)=TRIM(SRC.MBRNO) AND TRIM(STG.DPNTNO)=TRIM(SRC.DPNTNO) AND TRIM(STG.PRODTYP)=TRIM(SRC.PRODTYP)  )
+    LEFT OUTER JOIN Jd1dta.ZTEMPCOVPF ZTEMPCOV ON ( TRIM(ZTEMPCOV.CHDRNUM)=TRIM(STG.REFNUM) AND TRIM(ztempcov.tranno)=TRIM(stg.tranno)
+                                AND TRIM(ZTEMPCOV.MBRNO)=TRIM(STG.MBRNO) AND TRIM(ZTEMPCOV.DPNTNO)=TRIM(STG.DPNTNO) AND TRIM(ZTEMPCOV.PRODTYP)=TRIM(STG.PRODTYP)  )
+    WHERE 1=1
+
+);
+
+TYPE typ_cur_ZTEMPCOV IS TABLE OF cur_ZTEMPCOV%ROWTYPE;
+typ_cur_ZTEMPCOV_data typ_cur_ZTEMPCOV;
+
+
+
+--- cursor for ZSUBCOVDTLS
+CURSOR  cur_ZSUBCOVDTLS is (
+	SELECT
+    TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+    ,  TRIM(SRC.REFNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO, TRIM(SRC.MBRNO) SRC_MBRNO
+    ,  TRIM(SRC.DPNTNO) SRC_DPNTNO, TRIM(SRC.PRODTYP) SRC_PRODTYP01 , TRIM(SRC.PRODTYP02) SRC_PRODTYP02
+    ,  TRIM(SRC.EFFDATE) SRC_EFFDATE  ,  TRIM(SRC.NDRPREM) SRC_DPREM
+
+    , TRIM(STG.REFNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO , TRIM(STG.MBRNO) STG_MBRNO
+    , TRIM(STG.DPNTNO) STG_DPNTNO , TRIM(STG.PRODTYP) STG_PRODTYP01 , TRIM(STG.PRODTYP02) STG_PRODTYP02
+    , TRIM(STG.EFFDATE) STG_EFFDATE , TRIM(STG.NDRPREM) STG_DPREM
+
+
+	, TRIM(ZSUBCOVDTLS.CHDRNUM) ZSUBCOVDTLS_CHDRNUM, TRIM(ZSUBCOVDTLS.TRANNO) ZSUBCOVDTLS_TRANNO , TRIM(ZSUBCOVDTLS.MBRNO) ZSUBCOVDTLS_MBRNO
+    , TRIM(ZSUBCOVDTLS.DPNTNO) ZSUBCOVDTLS_DPNTNO , TRIM(ZSUBCOVDTLS.PRODTYP01) ZSUBCOVDTLS_PRODTYP01  , TRIM(ZSUBCOVDTLS.PRODTYP02) ZSUBCOVDTLS_PRODTYP02
+    , TRIM(ZSUBCOVDTLS.EFFDATE) ZSUBCOVDTLS_EFFDATE , TRIM(ZSUBCOVDTLS.DPREM) ZSUBCOVDTLS_DPREM
+
+    FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+    LEFT OUTER JOIN STAGEDBUSR2.TITDMGMBRINDP2@DMSTAGEDBLINK SRC ON (TRIM(SRC.REFNUM) =   TRIM(POL.V_POLICY_NO) )
+
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGMBRINDP2@DMSTAGEDBLINK STG ON ( TRIM(STG.REFNUM)=TRIM(SRC.REFNUM) AND TRIM(STG.ZSEQNO)=TRIM(SRC.ZSEQNO)
+                                AND TRIM(STG.MBRNO)=TRIM(SRC.MBRNO) AND TRIM(STG.DPNTNO)=TRIM(SRC.DPNTNO) AND TRIM(STG.PRODTYP)=TRIM(SRC.PRODTYP) AND TRIM(STG.PRODTYP02)=TRIM(SRC.PRODTYP02)   )
+    LEFT OUTER JOIN Jd1dta.ZSUBCOVDTLS ZSUBCOVDTLS ON ( TRIM(ZSUBCOVDTLS.CHDRNUM)=TRIM(STG.REFNUM) AND TRIM(ZSUBCOVDTLS.tranno)=TRIM(stg.tranno)
+                                AND TRIM(ZSUBCOVDTLS.MBRNO)=TRIM(STG.MBRNO) AND TRIM(ZSUBCOVDTLS.DPNTNO)=TRIM(STG.DPNTNO) AND TRIM(ZSUBCOVDTLS.PRODTYP01)=TRIM(STG.PRODTYP) AND TRIM(ZSUBCOVDTLS.PRODTYP02)=TRIM(STG.PRODTYP02) )
+    WHERE 1=1
+    and SRC.NDRPREM > 0
+
+);
+
+TYPE typ_cur_ZSUBCOVDTLS IS TABLE OF cur_ZSUBCOVDTLS%ROWTYPE;
+typ_cur_ZSUBCOVDTLS_data typ_cur_ZSUBCOVDTLS;
+
+
+--- cursor for GXHIPF
+CURSOR  cur_GXHI is (
+	SELECT
+		TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+
+		,  TRIM(SRC.REFNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO, TRIM(SRC.MBRNO) SRC_MBRNO
+		,  TRIM(SRC.DPNTNO) SRC_DPNTNO, TRIM(SRC.PRODTYP) SRC_PRODTYP
+		,  TRIM(SRC.EFFDATE) SRC_EFFDATE ,  TRIM(SRC.HSUMINSU) SRC_SUMINSU
+		,  TRIM(SRC.ZINSTYPE) SRC_ZINSTYPE , TRIM(SRC.ZTAXFLG) SRC_ZTAXFLG
+
+		, TRIM(STG.REFNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO , TRIM(STG.MBRNO) STG_MBRNO
+		, TRIM(STG.DPNTNO) STG_DPNTNO , TRIM(STG.PRODTYP) STG_PRODTYP
+		, TRIM(STG.EFFDATE) STG_EFFDATE , TRIM(STG.HSUMINSU) STG_SUMINSU
+		, TRIM(STG.ZINSTYPE) STG_ZINSTYPE   , TRIM(STG.ZTAXFLG) STG_ZTAXFLG
+
+		, TRIM(GXHI.CHDRNUM) GXHI_CHDRNUM, TRIM(GXHI.TRANNO) GXHI_TRANNO , TRIM(GXHI.MBRNO) GXHI_MBRNO
+		, TRIM(GXHI.DPNTNO) GXHI_DPNTNO , TRIM(GXHI.PRODTYP) GXHI_PRODTYP
+		, TRIM(GXHI.EFFDATE) GXHI_EFFDATE , TRIM(GXHI.SUMINSU) GXHI_SUMINSU
+		, TRIM(GXHI.ZTAXFLG) GXHI_ZTAXFLG  , TRIM(GXHI.ZINSTYPE) GXHI_ZINSTYPE
+
+	FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+    LEFT OUTER JOIN STAGEDBUSR2.TITDMGMBRINDP2@DMSTAGEDBLINK SRC ON (TRIM(SRC.REFNUM) =   TRIM(POL.V_POLICY_NO) )
+
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGMBRINDP2@DMSTAGEDBLINK STG ON ( TRIM(STG.REFNUM)=TRIM(SRC.REFNUM) AND TRIM(STG.ZSEQNO)=TRIM(SRC.ZSEQNO)
+                                AND TRIM(STG.MBRNO)=TRIM(SRC.MBRNO) AND TRIM(STG.DPNTNO)=TRIM(SRC.DPNTNO) AND TRIM(STG.PRODTYP)=TRIM(SRC.PRODTYP)  )
+    LEFT OUTER JOIN Jd1dta.GXHIPF GXHI ON ( TRIM(GXHI.CHDRNUM)=TRIM(STG.REFNUM) AND TRIM(GXHI.tranno)=TRIM(stg.tranno)
+                                AND TRIM(GXHI.MBRNO)=TRIM(STG.MBRNO) AND TRIM(GXHI.DPNTNO)=TRIM(STG.DPNTNO) AND TRIM(GXHI.PRODTYP)=TRIM(STG.PRODTYP)  )
+    WHERE 1=1
+
+
+);
+
+TYPE typ_cur_GXHI IS TABLE OF cur_GXHI%ROWTYPE;
+typ_cur_GXHI_data typ_cur_GXHI;
+
+
+
+--- cursor for ZODMPRMVERPF
+CURSOR  cur_ZODMPRMVER is (
+    	SELECT
+		POL_V_PRD_CDE,  POL_D_POL_START_DT, POL_V_POL_STATUS
+		, SRC_CHDRNUM, SRC_ZSEQNO, SRC_CCDATE, SRC_ZINSTYPE
+		, STG_CHDRNUM, STG_ZSEQNO, STG_TRANNO, STG_CCDATE, STG_ZINSTYPE
+		, ZODMPRMVER_CHDRNUM, ZODMPRMVER_CCDATE , ZODMPRMVER_ZINSTYPE
+    from (
+           WITH SRC_DATA AS (
+        SELECT DISTINCT
+            TRIM(SRC.REFNUM) SRC_CHDRNUM , TRIM(SRC.ZSEQNO) SRC_ZSEQNO
+            ,TRIM(SRC.EFFDATE) SRC_CCDATE ,  TRIM(SRC.ZINSTYPE) SRC_ZINSTYPE
+         FROM STAGEDBUSR2.TITDMGMBRINDP2@DMSTAGEDBLINK SRC
+        )
+        , STG_DATA AS (
+            SELECT DISTINCT
+                TRIM(STG.REFNUM) STG_CHDRNUM, TRIM(STG.ZSEQNO) STG_ZSEQNO , TRIM(STG.TRANNO) STG_TRANNO
+               , TRIM(STG.EFFDATE) STG_CCDATE , TRIM(STG.ZINSTYPE) STG_ZINSTYPE
+            FROM STAGEDBUSR.TITDMGMBRINDP2@DMSTAGEDBLINK STG
+        )
+        , IG_DATA AS (
+            SELECT DISTINCT
+               TRIM(CHDRNUM) ZODMPRMVER_CHDRNUM, TRIM(CCDATE) ZODMPRMVER_CCDATE, TRIM(ZINSTYPE) ZODMPRMVER_ZINSTYPE
+            FROM Jd1dta.ZODMPRMVERPF
+        )
+        SELECT  
+             TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+        
+            ,SRC_CHDRNUM, SRC_ZSEQNO, SRC_CCDATE, SRC_ZINSTYPE
+            , STG_CHDRNUM, STG_ZSEQNO, STG_TRANNO, STG_CCDATE, STG_ZINSTYPE
+            , ZODMPRMVER_CHDRNUM, ZODMPRMVER_CCDATE , ZODMPRMVER_ZINSTYPE
+
+		-- FROM SRC_DATA SRC
+		FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+		LEFT OUTER JOIN SRC_DATA SRC ON (TRIM(SRC.SRC_CHDRNUM) =   TRIM(POL.V_POLICY_NO) )
+
+        LEFT OUTER JOIN STG_DATA STG ON ( SRC_CHDRNUM = STG_CHDRNUM AND STG_ZSEQNO = SRC_ZSEQNO AND STG_ZINSTYPE = SRC_ZINSTYPE AND  STG_CCDATE = SRC_CCDATE)
+        LEFT OUTER JOIN IG_DATA ZODMPRMVER ON ( ZODMPRMVER_CHDRNUM = STG_CHDRNUM AND  ZODMPRMVER_ZINSTYPE = STG_ZINSTYPE AND  ZODMPRMVER_CCDATE = STG_CCDATE)
+
+    ) dt
+);
+
+TYPE typ_cur_ZODMPRMVER IS TABLE OF cur_ZODMPRMVER%ROWTYPE;
+typ_cur_ZODMPRMVER_data typ_cur_ZODMPRMVER;
+
+
+--- cursor for ZAPIRNOPF
+CURSOR  cur_ZAPIRNO is (
+	SELECT
+		TRIM(POL.V_PRD_CDE) POL_V_PRD_CDE, TRIM(POL.D_POL_START_DT) POL_D_POL_START_DT, TRIM(POL.V_POL_STATUS) POL_V_POL_STATUS
+
+		,  TRIM(SRC.CHDRNUM) SRC_CHDRNUM , TRIM(SRC.MBRNO) SRC_MBRNO ,  TRIM(SRC.ZINSTYPE) SRC_ZINSTYPE
+		,  TRIM(SRC.ZAPIRNO) SRC_ZAPIRNO
+
+		, TRIM(STG.CHDRNUM) STG_CHDRNUM , TRIM(STG.MBRNO) STG_MBRNO ,  TRIM(STG.ZINSTYPE) STG_ZINSTYPE
+		, TRIM(STG.ZAPIRNO) STG_ZAPIRNO
+
+		, TRIM(ZAPIRNO.CHDRNUM) ZAPIRNO_CHDRNUM,  TRIM(ZAPIRNO.MBRNO) ZAPIRNO_MBRNO , TRIM(ZAPIRNO.ZINSTYPE) ZAPIRNO_ZINSTYPE
+		, TRIM(ZAPIRNO.ZAPIRNO) ZAPIRNO_ZAPIRNO
+
+    -- FROM STAGEDBUSR2.TITDMGAPIRNO@DMSTAGEDBLINK SRC
+	FROM STAGEDBUSR2.DM_POLICY_RECON@DMSTAGEDBLINK POL
+	LEFT OUTER JOIN STAGEDBUSR2.TITDMGAPIRNO@DMSTAGEDBLINK SRC ON (TRIM(SRC.CHDRNUM) =   TRIM(POL.V_POLICY_NO) )
+
+    LEFT OUTER JOIN STAGEDBUSR.TITDMGAPIRNO@DMSTAGEDBLINK STG ON ( TRIM(STG.CHDRNUM)=TRIM(SRC.CHDRNUM) AND TRIM(STG.ZINSTYPE)=TRIM(SRC.ZINSTYPE)  AND TRIM(STG.MBRNO)=TRIM(SRC.MBRNO)  )
+    LEFT OUTER JOIN Jd1dta.ZAPIRNOPF ZAPIRNO ON ( TRIM(ZAPIRNO.CHDRNUM)=TRIM(STG.CHDRNUM) AND TRIM(ZAPIRNO.ZINSTYPE)=TRIM(STG.ZINSTYPE)  AND TRIM(ZAPIRNO.MBRNO)=TRIM(STG.MBRNO) )
+    WHERE 1=1
+);
+
+TYPE typ_cur_ZAPIRNO IS TABLE OF cur_ZAPIRNO%ROWTYPE;
+typ_cur_ZAPIRNO_data typ_cur_ZAPIRNO;
+
+
+ 
+ 
+ -- recon set 2: record wise : END : 20210315
+ 
+BEGIN
+  
+  
+ -- recon set 2: record wise : START : 20210315
+ 
+ 
+--------------------------------------------------------------------------------
+------------------- ZRRAPF RECON : START----------------------------------------
+BEGIN
+     OPEN cur_ztrapf;
+        FETCH cur_ztrapf BULK COLLECT INTO typ_cur_ztrapf_data LIMIT cur_limit;
+        FOR idx IN typ_cur_ztrapf_data.FIRST .. typ_cur_ztrapf_data.LAST
+        LOOP
+            lv_err_cnt := 0;
+            lv_chdrnum :=  typ_cur_ztrapf_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_ztrapf_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_ztrapf_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_ztrapf_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_ztrapf_data(idx).SRC_EFFDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+
+            -- POLICY NOT FOUNT
+            IF ( typ_cur_ztrapf_data(idx).ZTRA_CHDRNUM IS NULL OR  typ_cur_ztrapf_data(idx).ZTRA_TRANNO IS NULL
+                OR typ_cur_ztrapf_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_ztrapf_data(idx).STG_ZSEQNO IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_tranno;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_ZSEQNO;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_ZSEQNO;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_TRANNO;
+
+            -- EFFDATE Mismach
+            ELSIF (  ( NVL(typ_cur_ztrapf_data(idx).SRC_EFFDATE,'0') <> NVL(typ_cur_ztrapf_data(idx).STG_EFFDATE,'0') )
+                OR   ( NVL(typ_cur_ztrapf_data(idx).STG_EFFDATE,'0') <> NVL(typ_cur_ztrapf_data(idx).ZTRA_EFFDATE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_effdate;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_EFFDATE;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_EFFDATE;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_EFFDATE;
+
+             -- ZALTREGDAT Mismach
+            ELSIF (  ( NVL(typ_cur_ztrapf_data(idx).SRC_ZALTREGDAT,'0') <> NVL(typ_cur_ztrapf_data(idx).STG_ZALTREGDAT,'0') )
+                OR   ( NVL(typ_cur_ztrapf_data(idx).STG_ZALTREGDAT,'0') <> NVL(typ_cur_ztrapf_data(idx).ZTRA_ZALTREGDAT,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_ZALTREGDAT;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_ZALTREGDAT;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_ZALTREGDAT;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_ZALTREGDAT;
+
+              -- DOCRCDTE Mismach
+            ELSIF (  ( NVL(typ_cur_ztrapf_data(idx).SRC_ZACLSDAT,'0') <> NVL(typ_cur_ztrapf_data(idx).STG_ZACLSDAT,'0') )
+                OR   ( NVL(typ_cur_ztrapf_data(idx).STG_ZACLSDAT,'0') <> NVL(typ_cur_ztrapf_data(idx).ZTRA_DOCRCDTE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_DOCRCDTE;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_ZACLSDAT;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_ZACLSDAT;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_DOCRCDTE;
+
+            -- HPROPDTE Mismach
+            ELSIF (  ( NVL(typ_cur_ztrapf_data(idx).SRC_ZACLSDAT,'0') <> NVL(typ_cur_ztrapf_data(idx).STG_ZACLSDAT,'0') )
+                OR   ( NVL(typ_cur_ztrapf_data(idx).STG_ZACLSDAT,'0') <> NVL(typ_cur_ztrapf_data(idx).ZTRA_HPROPDTE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_HPROPDTE;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_ZACLSDAT;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_ZACLSDAT;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_HPROPDTE;
+
+            -- ZTRXSTAT Mismach
+              ELSIF (  ( NVL(typ_cur_ztrapf_data(idx).SRC_ZTRXSTAT,'0') <> NVL(typ_cur_ztrapf_data(idx).STG_ZTRXSTAT,'0') )
+                OR   ( NVL(typ_cur_ztrapf_data(idx).STG_ZTRXSTAT,'0') <> NVL(typ_cur_ztrapf_data(idx).ZTRA_ZTRXSTAT,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_ZTRXSTAT;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_ZTRXSTAT;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_ZTRXSTAT;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_ZTRXSTAT;
+
+            -- ZSTATRESN Mismach
+            ELSIF (  ( NVL(typ_cur_ztrapf_data(idx).SRC_ZSTATRESN,'0') <> NVL(typ_cur_ztrapf_data(idx).STG_ZSTATRESN,'0') )
+                OR   ( NVL(typ_cur_ztrapf_data(idx).STG_ZSTATRESN,'0') <> NVL(typ_cur_ztrapf_data(idx).ZTRA_ZSTATRESN,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_ZSTATRESN;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_ZSTATRESN;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_ZSTATRESN;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_ZSTATRESN;
+
+             -- ZACLSDAT Mismach
+            ELSIF (  ( NVL(typ_cur_ztrapf_data(idx).SRC_ZACLSDAT,'0') <> NVL(typ_cur_ztrapf_data(idx).STG_ZACLSDAT,'0') )
+                OR   ( NVL(typ_cur_ztrapf_data(idx).STG_ZACLSDAT,'0') <> NVL(typ_cur_ztrapf_data(idx).ZTRA_ZACLSDAT,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_ZACLSDAT;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_ZACLSDAT;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_ZACLSDAT;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_ZACLSDAT;
+
+              -- APPRDTE Mismach
+            ELSIF (  ( NVL(typ_cur_ztrapf_data(idx).SRC_APPRDTE,'0') <> NVL(typ_cur_ztrapf_data(idx).STG_APPRDTE,'0') )
+                OR   ( NVL(typ_cur_ztrapf_data(idx).STG_APPRDTE,'0') <> NVL(typ_cur_ztrapf_data(idx).ZTRA_APPRDTE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ztra_APPRDTE;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_APPRDTE;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_APPRDTE;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_APPRDTE;
+
+           END IF;
+
+            IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+
+            END IF;
+
+        END LOOP;
+         COMMIT;
+    CLOSE cur_ztrapf;
+END;
+
+--------------------------------------------------------------------------------
+------------------- ZALTPF RECON : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_zaltpf;
+        FETCH cur_zaltpf BULK COLLECT INTO typ_cur_zaltpf_data LIMIT cur_limit;
+        FOR idx IN typ_cur_zaltpf_data.FIRST .. typ_cur_zaltpf_data.LAST
+        LOOP
+			lv_err_cnt := 0;
+            lv_chdrnum :=  typ_cur_zaltpf_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_zaltpf_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_zaltpf_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_zaltpf_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_zaltpf_data(idx).SRC_EFFDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+
+             -- POLICY NOT FOUNT
+            IF ( typ_cur_zaltpf_data(idx).ZALT_CHDRNUM IS NULL OR  typ_cur_zaltpf_data(idx).ZALT_TRANNO IS NULL
+                OR typ_cur_zaltpf_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_zaltpf_data(idx).STG_ZSEQNO IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zaltpf_tranno;
+                lv_src_val      := typ_cur_ztrapf_data(idx).SRC_ZSEQNO;
+                lv_stg_val      := typ_cur_ztrapf_data(idx).STG_ZSEQNO;
+                lv_ig_val       := typ_cur_ztrapf_data(idx).ZTRA_TRANNO;
+
+			  -- ZCMPCODE Mismach
+            ELSIF (  ( NVL(typ_cur_zaltpf_data(idx).SRC_ZCMPCODE,'0') <> NVL(typ_cur_zaltpf_data(idx).STG_ZCMPCODE,'0') )
+                OR   ( NVL(typ_cur_zaltpf_data(idx).STG_ZCMPCODE,'0') <> NVL(typ_cur_zaltpf_data(idx).ZALT_ZCMPCODE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zaltpf_ZCMPCODE;
+                lv_src_val      := typ_cur_zaltpf_data(idx).SRC_ZCMPCODE;
+                lv_stg_val      := typ_cur_zaltpf_data(idx).STG_ZCMPCODE;
+                lv_ig_val       := typ_cur_zaltpf_data(idx).ZALT_ZCMPCODE;
+
+			-- ZCPNSCDE Mismach
+            ELSIF (  ( NVL(typ_cur_zaltpf_data(idx).SRC_ZCPNSCDE,'0') <> NVL(typ_cur_zaltpf_data(idx).STG_ZCPNSCDE,'0') )
+                OR   ( NVL(typ_cur_zaltpf_data(idx).STG_ZCPNSCDE,'0') <> NVL(typ_cur_zaltpf_data(idx).ZALT_ZCPNSCDE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zaltpf_ZCPNSCDE;
+                lv_src_val      := typ_cur_zaltpf_data(idx).SRC_ZCPNSCDE;
+                lv_stg_val      := typ_cur_zaltpf_data(idx).STG_ZCPNSCDE;
+                lv_ig_val       := typ_cur_zaltpf_data(idx).ZALT_ZCPNSCDE;
+
+             -- CRDTCARD  Mismach
+            ELSIF (  ( NVL(typ_cur_zaltpf_data(idx).SRC_CRDTCARD,'0') <> NVL(typ_cur_zaltpf_data(idx).STG_CRDTCARD,'0') )
+                OR   ( NVL(typ_cur_zaltpf_data(idx).STG_CRDTCARD,'0') <> NVL(typ_cur_zaltpf_data(idx).ZALT_CRDTCARD,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zaltpf_CRDTCARD;
+                lv_src_val      := typ_cur_zaltpf_data(idx).SRC_CRDTCARD;
+                lv_stg_val      := typ_cur_zaltpf_data(idx).STG_CRDTCARD;
+                lv_ig_val       := typ_cur_zaltpf_data(idx).ZALT_CRDTCARD;
+
+
+             --  BNKACCKEY01 Mismach
+            ELSIF (  ( NVL(typ_cur_zaltpf_data(idx).SRC_BNKACCKEY01,'0') <> NVL(typ_cur_zaltpf_data(idx).STG_BNKACCKEY01,'0') )
+                OR   ( NVL(typ_cur_zaltpf_data(idx).STG_BNKACCKEY01,'0') <> NVL(typ_cur_zaltpf_data(idx).ZALT_BNKACCKEY01,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zaltpf_BNKACCKEY01;
+                lv_src_val      := typ_cur_zaltpf_data(idx).SRC_BNKACCKEY01;
+                lv_stg_val      := typ_cur_zaltpf_data(idx).STG_BNKACCKEY01;
+                lv_ig_val       := typ_cur_zaltpf_data(idx).ZALT_BNKACCKEY01;
+
+
+		    -- BANKKEY Mismach
+            ELSIF (  ( NVL(typ_cur_zaltpf_data(idx).SRC_BANKKEY,'0') <> NVL(typ_cur_zaltpf_data(idx).STG_BANKKEY,'0') )
+                OR   ( NVL(typ_cur_zaltpf_data(idx).STG_BANKKEY,'0') <> NVL(typ_cur_zaltpf_data(idx).ZALT_BANKKEY,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zaltpf_BANKKEY;
+                lv_src_val      := typ_cur_zaltpf_data(idx).SRC_BANKKEY;
+                lv_stg_val      := typ_cur_zaltpf_data(idx).STG_BANKKEY;
+                lv_ig_val       := typ_cur_zaltpf_data(idx).ZALT_BANKKEY;
+
+			-- PREAUTNO Mismach
+            ELSIF (  ( NVL(typ_cur_zaltpf_data(idx).SRC_PREAUTNO,'0') <> NVL(typ_cur_zaltpf_data(idx).STG_PREAUTNO,'0') )
+                OR   ( NVL(typ_cur_zaltpf_data(idx).STG_PREAUTNO,'0') <> NVL(typ_cur_zaltpf_data(idx).ZALT_PREAUTNO,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zaltpf_PREAUTNO;
+                lv_src_val      := typ_cur_zaltpf_data(idx).SRC_PREAUTNO;
+                lv_stg_val      := typ_cur_zaltpf_data(idx).STG_PREAUTNO;
+                lv_ig_val       := typ_cur_zaltpf_data(idx).ZALT_PREAUTNO;
+
+			  -- BANKACCDSC01 Mismach
+            ELSIF (  ( NVL(typ_cur_zaltpf_data(idx).SRC_BANKACCDSC01,'0') <> NVL(typ_cur_zaltpf_data(idx).STG_BANKACCDSC01,'0') )
+                OR   ( NVL(typ_cur_zaltpf_data(idx).STG_BANKACCDSC01,'0') <> NVL(typ_cur_zaltpf_data(idx).ZALT_BANKACCDSC01,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zaltpf_BANKACCDSC01;
+                lv_src_val      := typ_cur_zaltpf_data(idx).SRC_BANKACCDSC01;
+                lv_stg_val      := typ_cur_zaltpf_data(idx).STG_BANKACCDSC01;
+                lv_ig_val       := typ_cur_zaltpf_data(idx).ZALT_BANKACCDSC01;
+
+            END IF;
+
+		 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+    CLOSE cur_zaltpf;
+
+
+END;
+
+
+--------------------------------------------------------------------------------
+------------------- ZINSDTLSPF : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_zinsdtls;
+        FETCH cur_zinsdtls BULK COLLECT INTO typ_cur_zinsdtls_data LIMIT cur_limit;
+        FOR idx IN typ_cur_zinsdtls_data.FIRST .. typ_cur_zinsdtls_data.LAST
+        LOOP
+
+			lv_err_cnt := 0;
+            lv_chdrnum :=  typ_cur_zinsdtls_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_zinsdtls_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_zinsdtls_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_zinsdtls_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_zinsdtls_data(idx).SRC_EFFDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+			
+			
+			lv_record_key := (lv_chdrnum || '-' || typ_cur_zinsdtls_data(idx).SRC_ZSEQNO || '-'|| typ_cur_zinsdtls_data(idx).SRC_MBRNO );
+            lv_record_key_stg := NVL(typ_cur_zinsdtls_data(idx).STG_CHDRNUM, '') || '-' || NVL(typ_cur_zinsdtls_data(idx).STG_ZSEQNO,'') || '-'|| NVL(typ_cur_zinsdtls_data(idx).STG_MBRNO, '') ;
+            lv_record_key_vm1dta := NVL(typ_cur_zinsdtls_data(idx).ZINS_CHDRNUM, '') || '-' || NVL(typ_cur_zinsdtls_data(idx).ZINS_TRANNO,'') || '-'|| NVL(typ_cur_zinsdtls_data(idx).ZINS_MBRNO, '') ;
+
+
+             -- POLICY - TRANO - MBRNO NOT FOUNT
+            IF ( typ_cur_zinsdtls_data(idx).ZINS_CHDRNUM IS NULL OR  typ_cur_zinsdtls_data(idx).ZINS_TRANNO IS NULL
+                OR  typ_cur_zinsdtls_data(idx).ZINS_MBRNO IS NULL
+                OR typ_cur_zinsdtls_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_zinsdtls_data(idx).STG_ZSEQNO IS NULL
+                OR  typ_cur_zinsdtls_data(idx).STG_MBRNO IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zinsdts_mbrno;
+                lv_src_val      := lv_record_key;
+                lv_stg_val      := lv_record_key_stg;
+                lv_ig_val       := lv_record_key_vm1dta;
+
+			 -- CLTRELN Mismach
+            ELSIF (  ( NVL(typ_cur_zinsdtls_data(idx).SRC_CLTRELN,'0') <> NVL(typ_cur_zinsdtls_data(idx).STG_CLTRELN,'0') )
+                OR   ( NVL(typ_cur_zinsdtls_data(idx).STG_CLTRELN,'0') <> NVL(typ_cur_zinsdtls_data(idx).ZINS_CLTRELN,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zinsdts_CLTRELN;
+                lv_src_val      := typ_cur_zinsdtls_data(idx).SRC_CLTRELN;
+                lv_stg_val      := typ_cur_zinsdtls_data(idx).STG_CLTRELN;
+                lv_ig_val       := typ_cur_zinsdtls_data(idx).ZINS_CLTRELN;
+
+
+			 -- ZPLANCDE Mismach
+            ELSIF (  ( NVL(typ_cur_zinsdtls_data(idx).SRC_ZPLANCDE,'0') <> NVL(typ_cur_zinsdtls_data(idx).STG_ZPLANCDE,'0') )
+                OR   ( NVL(typ_cur_zinsdtls_data(idx).STG_ZPLANCDE,'0') <> NVL(typ_cur_zinsdtls_data(idx).ZINS_ZPLANCDE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zinsdts_ZPLANCDE;
+                lv_src_val      := typ_cur_zinsdtls_data(idx).SRC_ZPLANCDE;
+                lv_stg_val      := typ_cur_zinsdtls_data(idx).STG_ZPLANCDE;
+                lv_ig_val       := typ_cur_zinsdtls_data(idx).ZINS_ZPLANCDE;
+
+			 -- ZWORKPLCE2  Mismach
+            ELSIF (  ( NVL(typ_cur_zinsdtls_data(idx).SRC_ZWORKPLCE2,'0') <> NVL(typ_cur_zinsdtls_data(idx).STG_ZWORKPLCE2,'0') )
+                OR   ( NVL(typ_cur_zinsdtls_data(idx).STG_ZWORKPLCE2,'0') <> NVL(typ_cur_zinsdtls_data(idx).ZINS_ZWORKPLCE2,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zinsdts_ZWORKPLCE2;
+                lv_src_val      := typ_cur_zinsdtls_data(idx).SRC_ZWORKPLCE2;
+                lv_stg_val      := typ_cur_zinsdtls_data(idx).STG_ZWORKPLCE2;
+                lv_ig_val       := typ_cur_zinsdtls_data(idx).ZINS_ZWORKPLCE2;
+
+
+			-- EFFDATE Mismach
+            ELSIF (  ( NVL(typ_cur_zinsdtls_data(idx).SRC_EFFDATE,'0') <> NVL(typ_cur_zinsdtls_data(idx).STG_EFFDATE,'0') )
+                OR   ( NVL(typ_cur_zinsdtls_data(idx).STG_EFFDATE,'0') <> NVL(typ_cur_zinsdtls_data(idx).ZINS_EFFDATE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zinsdts_EFFDATE;
+                lv_src_val      := typ_cur_zinsdtls_data(idx).SRC_EFFDATE;
+                lv_stg_val      := typ_cur_zinsdtls_data(idx).STG_EFFDATE;
+                lv_ig_val       := typ_cur_zinsdtls_data(idx).ZINS_EFFDATE;
+
+			--  Mismach
+            ELSIF (  ( NVL(typ_cur_zinsdtls_data(idx).SRC_ZINSROLE,'0') <> NVL(typ_cur_zinsdtls_data(idx).STG_ZINSROLE,'0') )
+                OR   ( NVL(typ_cur_zinsdtls_data(idx).STG_ZINSROLE,'0') <> NVL(typ_cur_zinsdtls_data(idx).ZINS_ZINSROLE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zinsdts_ZINSROLE;
+                lv_src_val      := typ_cur_zinsdtls_data(idx).SRC_ZINSROLE;
+                lv_stg_val      := typ_cur_zinsdtls_data(idx).STG_ZINSROLE;
+                lv_ig_val       := typ_cur_zinsdtls_data(idx).ZINS_ZINSROLE;
+
+			END IF;
+
+			 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+    CLOSE cur_zinsdtls;
+
+
+END;
+
+
+
+--------------------------------------------------------------------------------
+------------------- ZMCIPF : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_zmcipf;
+        FETCH cur_zmcipf BULK COLLECT INTO typ_cur_zmci_data LIMIT cur_limit;
+        FOR idx IN typ_cur_zmci_data.FIRST .. typ_cur_zmci_data.LAST
+        LOOP
+            lv_err_cnt := 0;
+            lv_chdrnum :=  typ_cur_zmci_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_zmci_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_zmci_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_zmci_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_zmci_data(idx).SRC_EFFDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+            
+			lv_record_key := (lv_chdrnum || '-' || typ_cur_zmci_data(idx).SRC_ZSEQNO || '-'|| typ_cur_zmci_data(idx).SRC_MBRNO  );
+            lv_record_key_stg := NVL(typ_cur_zmci_data(idx).STG_CHDRNUM, '') || '-' || NVL(typ_cur_zmci_data(idx).STG_ZSEQNO,'')  ;
+            lv_record_key_vm1dta := NVL(typ_cur_zmci_data(idx).ZMCI_CHDRNUM, '') || '-' || NVL(typ_cur_zmci_data(idx).ZMCI_TRANNO,'')  ;
+
+
+             -- POLICY - TRANO - MBRNO NOT FOUNT
+            IF ( typ_cur_zmci_data(idx).ZMCI_CHDRNUM IS NULL OR  typ_cur_zmci_data(idx).ZMCI_TRANNO IS NULL
+                OR typ_cur_zmci_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_zmci_data(idx).STG_ZSEQNO IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_zmcipf_trnno;
+                lv_src_val      := lv_record_key;
+                lv_stg_val      := lv_record_key_stg;
+                lv_ig_val       := lv_record_key_vm1dta;
+
+			-- BANKKEY mismatch
+              ELSIF (  ( NVL(typ_cur_zmci_data(idx).SRC_BANKKEY,'0') <> NVL(typ_cur_zmci_data(idx).STG_BANKKEY,'0') )
+                OR   ( NVL(typ_cur_zmci_data(idx).STG_BANKKEY,'0') <> NVL(typ_cur_zmci_data(idx).ZMCI_BANKKEY,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZMCIPF_BANKKEY;
+                lv_src_val      := typ_cur_zmci_data(idx).SRC_BANKKEY;
+                lv_stg_val      := typ_cur_zmci_data(idx).STG_BANKKEY;
+                lv_ig_val       := typ_cur_zmci_data(idx).ZMCI_BANKKEY;
+
+
+            -- BNKACTYP01 mismatch
+              ELSIF (  ( NVL(typ_cur_zmci_data(idx).SRC_BNKACTYP01,'0') <> NVL(typ_cur_zmci_data(idx).STG_BNKACTYP01,'0') )
+                OR   ( NVL(typ_cur_zmci_data(idx).STG_BNKACTYP01,'0') <> NVL(typ_cur_zmci_data(idx).ZMCI_BNKACTYP01,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZMCIPF_BNKACTYP01;
+                lv_src_val      := typ_cur_zmci_data(idx).SRC_BNKACTYP01;
+                lv_stg_val      := typ_cur_zmci_data(idx).STG_BNKACTYP01;
+                lv_ig_val       := typ_cur_zmci_data(idx).ZMCI_BNKACTYP01;
+
+		 	-- PREAUTNO mismatch
+              ELSIF (  ( NVL(typ_cur_zmci_data(idx).SRC_PREAUTNO,'0') <> NVL(typ_cur_zmci_data(idx).STG_PREAUTNO,'0') )
+                OR   ( NVL(typ_cur_zmci_data(idx).STG_PREAUTNO,'0') <> NVL(typ_cur_zmci_data(idx).ZMCI_PREAUTNO,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZMCIPF_PREAUTNO;
+                lv_src_val      := typ_cur_zmci_data(idx).SRC_PREAUTNO;
+                lv_stg_val      := typ_cur_zmci_data(idx).STG_PREAUTNO;
+                lv_ig_val       := typ_cur_zmci_data(idx).ZMCI_PREAUTNO;
+
+            -- EFFDATE mismatch
+              ELSIF (  ( NVL(typ_cur_zmci_data(idx).SRC_EFFDATE,'0') <> NVL(typ_cur_zmci_data(idx).STG_EFFDATE,'0') )
+                OR   ( NVL(typ_cur_zmci_data(idx).STG_EFFDATE,'0') <> NVL(typ_cur_zmci_data(idx).ZMCI_EFFDATE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZMCIPF_EFFDATE;
+                lv_src_val      := typ_cur_zmci_data(idx).SRC_EFFDATE;
+                lv_stg_val      := typ_cur_zmci_data(idx).STG_EFFDATE;
+                lv_ig_val       := typ_cur_zmci_data(idx).ZMCI_EFFDATE;
+
+            -- ZDDREQNO mismatch
+              ELSIF (  ( NVL(typ_cur_zmci_data(idx).SRC_ZDDREQNO,'0') <> NVL(typ_cur_zmci_data(idx).STG_ZDDREQNO,'0') )
+                OR   ( NVL(typ_cur_zmci_data(idx).STG_ZDDREQNO,'0') <> NVL(typ_cur_zmci_data(idx).ZMCI_ZDDREQNO,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZMCIPF_ZDDREQNO;
+                lv_src_val      := typ_cur_zmci_data(idx).SRC_ZDDREQNO;
+                lv_stg_val      := typ_cur_zmci_data(idx).STG_ZDDREQNO;
+                lv_ig_val       := typ_cur_zmci_data(idx).ZMCI_ZDDREQNO;
+
+			END IF;
+
+			 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+    CLOSE cur_zmcipf;
+
+
+END;
+
+
+--------------------------------------------------------------------------------
+------------------- ZBENFDTLSPF : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_zbenfdtlspf;
+        FETCH cur_zbenfdtlspf BULK COLLECT INTO typ_cur_zbenf_data LIMIT cur_limit;
+        FOR idx IN typ_cur_zbenf_data.FIRST .. typ_cur_zbenf_data.LAST
+        LOOP
+            lv_err_cnt := 0;
+		
+            lv_chdrnum :=  typ_cur_zbenf_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_zbenf_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_zbenf_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_zbenf_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_zbenf_data(idx).SRC_EFFDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+            
+			lv_record_key        := (NVL(typ_cur_zbenf_data(idx).SRC_CHDRNUM,'') || '-' ||  NVL(typ_cur_zbenf_data(idx).SRC_ZSEQNO,'') || '-'||  NVL(typ_cur_zbenf_data(idx).SRC_MBRNO,'')  );
+            lv_record_key_stg    := NVL(typ_cur_zbenf_data(idx).STG_CHDRNUM, '') || '-' || NVL(typ_cur_zbenf_data(idx).STG_ZSEQNO,'') || '-' || NVL(typ_cur_zbenf_data(idx).STG_MBRNO,'') ;
+            lv_record_key_vm1dta := NVL(typ_cur_zbenf_data(idx).ZBENF_CHDRNUM, '') || '-' || NVL(typ_cur_zbenf_data(idx).ZBENF_TRANNO,'') || NVL(typ_cur_zbenf_data(idx).ZBENF_MBRNO,'')  ;
+            
+
+             -- POLICY - TRANO - MBRNO NOT FOUNT
+            IF ( typ_cur_zbenf_data(idx).ZBENF_CHDRNUM IS NULL OR  typ_cur_zbenf_data(idx).ZBENF_TRANNO IS NULL OR  typ_cur_zbenf_data(idx).ZBENF_MBRNO IS NULL
+                OR typ_cur_zbenf_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_zbenf_data(idx).STG_ZSEQNO IS NULL OR  typ_cur_zbenf_data(idx).STG_MBRNO IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZBENF_trnno;
+                lv_src_val      := lv_record_key;
+                lv_stg_val      := lv_record_key_stg;
+                lv_ig_val       := lv_record_key_vm1dta;
+
+			-- EFFDATE mismatch
+              ELSIF (  ( NVL(typ_cur_zbenf_data(idx).SRC_EFFDATE,'0') <> NVL(typ_cur_zbenf_data(idx).STG_EFFDATE,'0') )
+                OR   ( NVL(typ_cur_zbenf_data(idx).STG_EFFDATE,'0') <> NVL(typ_cur_zbenf_data(idx).ZBENF_EFFDATE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZBENF_EFFDATE;
+                lv_src_val      := typ_cur_zbenf_data(idx).SRC_EFFDATE;
+                lv_stg_val      := typ_cur_zbenf_data(idx).STG_EFFDATE;
+                lv_ig_val       := typ_cur_zbenf_data(idx).ZBENF_EFFDATE;
+
+            -- ZKNJFULNM mismatch
+              ELSIF (  ( NVL(typ_cur_zbenf_data(idx).SRC_ZKNJFULNM,'0') <> NVL(typ_cur_zbenf_data(idx).STG_ZKNJFULNM,'0') )
+                OR   ( NVL(typ_cur_zbenf_data(idx).STG_ZKNJFULNM,'0') <> NVL(typ_cur_zbenf_data(idx).ZBENF_ZKNJFULNM,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZBENF_ZKNJFULNM;
+                lv_src_val      := typ_cur_zbenf_data(idx).SRC_ZKNJFULNM;
+                lv_stg_val      := typ_cur_zbenf_data(idx).STG_ZKNJFULNM;
+                lv_ig_val       := typ_cur_zbenf_data(idx).ZBENF_ZKNJFULNM;
+
+            -- CLTADDR01 mismatch
+              ELSIF (  ( NVL(typ_cur_zbenf_data(idx).SRC_CLTADDR01,'0') <> NVL(typ_cur_zbenf_data(idx).STG_CLTADDR01,'0') )
+                OR   ( NVL(typ_cur_zbenf_data(idx).STG_CLTADDR01,'0') <> NVL(typ_cur_zbenf_data(idx).ZBENF_CLTADDR01,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZBENF_CLTADDR01;
+                lv_src_val      := typ_cur_zbenf_data(idx).SRC_CLTADDR01;
+                lv_stg_val      := typ_cur_zbenf_data(idx).STG_CLTADDR01;
+                lv_ig_val       := typ_cur_zbenf_data(idx).ZBENF_CLTADDR01;
+
+             -- BNYPC mismatch
+              ELSIF (  ( NVL(typ_cur_zbenf_data(idx).SRC_BNYPC,'0') <> NVL(typ_cur_zbenf_data(idx).STG_BNYPC,'0') )
+                OR   ( NVL(typ_cur_zbenf_data(idx).STG_BNYPC,'0') <> NVL(typ_cur_zbenf_data(idx).ZBENF_BNYPC,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZBENF_BNYPC;
+                lv_src_val      := typ_cur_zbenf_data(idx).SRC_BNYPC;
+                lv_stg_val      := typ_cur_zbenf_data(idx).STG_BNYPC;
+                lv_ig_val       := typ_cur_zbenf_data(idx).ZBENF_BNYPC;
+
+             -- BNYRLN mismatch
+              ELSIF (  ( NVL(typ_cur_zbenf_data(idx).SRC_BNYRLN,'0') <> NVL(typ_cur_zbenf_data(idx).STG_BNYRLN,'0') )
+                OR   ( NVL(typ_cur_zbenf_data(idx).STG_BNYRLN,'0') <> NVL(typ_cur_zbenf_data(idx).ZBENF_BNYRLN,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZBENF_BNYRLN;
+                lv_src_val      := typ_cur_zbenf_data(idx).SRC_BNYRLN;
+                lv_stg_val      := typ_cur_zbenf_data(idx).STG_BNYRLN;
+                lv_ig_val       := typ_cur_zbenf_data(idx).ZBENF_BNYRLN;
+
+
+			END IF;
+
+			 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+
+    CLOSE cur_zbenfdtlspf;
+
+
+END;
+
+
+
+--------------------------------------------------------------------------------
+------------------- ZTEMPCOVPF : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_ZTEMPCOV;
+        FETCH cur_ZTEMPCOV BULK COLLECT INTO typ_cur_ZTEMPCOV_data LIMIT cur_limit;
+        FOR idx IN typ_cur_ZTEMPCOV_data.FIRST .. typ_cur_ZTEMPCOV_data.LAST
+        LOOP
+            lv_err_cnt := 0;
+		
+			lv_chdrnum :=  typ_cur_ZTEMPCOV_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_ZTEMPCOV_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_ZTEMPCOV_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_ZTEMPCOV_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_ZTEMPCOV_data(idx).SRC_EFFDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+            
+			lv_record_key        := (NVL(typ_cur_ZTEMPCOV_data(idx).SRC_CHDRNUM, '') || '-' || NVL(typ_cur_ZTEMPCOV_data(idx).SRC_ZSEQNO, '') || '-'|| NVL(typ_cur_ZTEMPCOV_data(idx).SRC_MBRNO, '') 
+									|| '-' || NVL(typ_cur_ZTEMPCOV_data(idx).SRC_DPNTNO, '') || '-' || NVL(typ_cur_ZTEMPCOV_data(idx).SRC_PRODTYP, '')   );
+            lv_record_key_stg    :=(NVL(typ_cur_ZTEMPCOV_data(idx).STG_CHDRNUM, '') || '-' || NVL(typ_cur_ZTEMPCOV_data(idx).STG_ZSEQNO, '') || '-'|| NVL(typ_cur_ZTEMPCOV_data(idx).STG_MBRNO, '') 
+									|| '-' || NVL(typ_cur_ZTEMPCOV_data(idx).STG_DPNTNO, '') || '-' || NVL(typ_cur_ZTEMPCOV_data(idx).STG_PRODTYP, '')   );
+            lv_record_key_vm1dta := (NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_CHDRNUM, '') || '-' || NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_TRANNO, '') || '-'|| NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_MBRNO, '') 
+									|| '-' || NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_DPNTNO, '') || '-' || NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_PRODTYP, '')   );
+			
+			
+
+             -- POLICY - TRANO - MBRNO - DPNTNO  - PROD- NOT FOUNT
+            IF ( typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_CHDRNUM IS NULL OR  typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_TRANNO IS NULL OR  typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_MBRNO IS NULL  OR  typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_PRODTYP IS NULL
+                OR typ_cur_ZTEMPCOV_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_ZTEMPCOV_data(idx).STG_ZSEQNO IS NULL OR  typ_cur_ZTEMPCOV_data(idx).STG_MBRNO IS NULL OR  typ_cur_ZTEMPCOV_data(idx).STG_PRODTYP  IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZTEMPCOV_PRODTYP;
+                lv_src_val      := lv_record_key;
+                lv_stg_val      := lv_record_key_stg;
+                lv_ig_val       := lv_record_key_vm1dta;
+
+			-- EFFDATE mismatch
+              ELSIF (  ( NVL(typ_cur_ZTEMPCOV_data(idx).SRC_EFFDATE,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).STG_EFFDATE,'0') )
+                OR   ( NVL(typ_cur_ZTEMPCOV_data(idx).STG_EFFDATE,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_EFFDATE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZTEMPCOV_EFFDATE;
+                lv_src_val      := typ_cur_ZTEMPCOV_data(idx).SRC_EFFDATE;
+                lv_stg_val      := typ_cur_ZTEMPCOV_data(idx).STG_EFFDATE;
+                lv_ig_val       := typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_EFFDATE;
+
+           -- DTEATT mismatch
+              ELSIF (  ( NVL(typ_cur_ZTEMPCOV_data(idx).SRC_DTEATT,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).STG_DTEATT,'0') )
+                OR   ( NVL(typ_cur_ZTEMPCOV_data(idx).STG_DTEATT,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_DTEATT,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZTEMPCOV_DTEATT;
+                lv_src_val      := typ_cur_ZTEMPCOV_data(idx).SRC_DTEATT;
+                lv_stg_val      := typ_cur_ZTEMPCOV_data(idx).STG_DTEATT;
+                lv_ig_val       := typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_DTEATT;
+
+             -- SUMINS mismatch
+              ELSIF (  ( NVL(typ_cur_ZTEMPCOV_data(idx).SRC_SUMINS,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).STG_SUMINS,'0') )
+                OR   ( NVL(typ_cur_ZTEMPCOV_data(idx).STG_SUMINS,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_SUMINS,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZTEMPCOV_SUMINS;
+                lv_src_val      := typ_cur_ZTEMPCOV_data(idx).SRC_SUMINS;
+                lv_stg_val      := typ_cur_ZTEMPCOV_data(idx).STG_SUMINS;
+                lv_ig_val       := typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_SUMINS;
+
+            -- DSUMIN mismatch
+              ELSIF (  ( NVL(typ_cur_ZTEMPCOV_data(idx).SRC_DSUMIN,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).STG_DSUMIN,'0') )
+                OR   ( NVL(typ_cur_ZTEMPCOV_data(idx).STG_DSUMIN,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_DSUMIN,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZTEMPCOV_DSUMIN;
+                lv_src_val      := typ_cur_ZTEMPCOV_data(idx).SRC_DSUMIN;
+                lv_stg_val      := typ_cur_ZTEMPCOV_data(idx).STG_DSUMIN;
+                lv_ig_val       := typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_DSUMIN;
+
+            -- ZINSTYPE mismatch
+              ELSIF (  ( NVL(typ_cur_ZTEMPCOV_data(idx).SRC_ZINSTYPE,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).STG_ZINSTYPE,'0') )
+                OR   ( NVL(typ_cur_ZTEMPCOV_data(idx).STG_ZINSTYPE,'0') <> NVL(typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_ZINSTYPE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZTEMPCOV_ZINSTYPE;
+                lv_src_val      := typ_cur_ZTEMPCOV_data(idx).SRC_ZINSTYPE;
+                lv_stg_val      := typ_cur_ZTEMPCOV_data(idx).STG_ZINSTYPE;
+                lv_ig_val       := typ_cur_ZTEMPCOV_data(idx).ZTEMPCOV_ZINSTYPE;
+
+
+			END IF;
+
+			 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+
+    CLOSE cur_ZTEMPCOV;
+
+
+END;
+
+--------------------------------------------------------------------------------
+------------------- ZSUBCOVDTLS : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_ZSUBCOVDTLS;
+        FETCH cur_ZSUBCOVDTLS BULK COLLECT INTO typ_cur_ZSUBCOVDTLS_data LIMIT cur_limit;
+        FOR idx IN typ_cur_ZSUBCOVDTLS_data.FIRST .. typ_cur_ZSUBCOVDTLS_data.LAST
+        LOOP
+            lv_err_cnt := 0;
+								
+			lv_chdrnum :=  typ_cur_ZSUBCOVDTLS_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_ZSUBCOVDTLS_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_ZSUBCOVDTLS_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_ZSUBCOVDTLS_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_ZSUBCOVDTLS_data(idx).SRC_EFFDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+            
+			lv_record_key        := (NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_CHDRNUM, '') || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_ZSEQNO, '') || '-'|| NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_MBRNO, '') 
+									|| '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_DPNTNO, '') || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_PRODTYP01, '')  || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_PRODTYP02, '') );
+            lv_record_key_stg    :=(NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_CHDRNUM, '') || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_ZSEQNO, '') || '-'|| NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_MBRNO, '') 
+									|| '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_DPNTNO, '') || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_PRODTYP01, '')  || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_PRODTYP02, '')  );
+            lv_record_key_vm1dta := (NVL(typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_CHDRNUM, '') || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_TRANNO, '') || '-'|| NVL(typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_MBRNO, '') 
+									|| '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_DPNTNO, '') || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_PRODTYP01, '')  || '-' || NVL(typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_PRODTYP02, '')  );
+									
+
+             -- POLICY - TRANO - MBRNO - DPNTNO  - PROD- PRODTYP02  :  NOT FOUNT
+            IF ( typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_CHDRNUM IS NULL OR  typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_TRANNO IS NULL OR  typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_MBRNO IS NULL
+                    OR  typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_PRODTYP01 IS NULL OR  typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_PRODTYP02 IS NULL
+                OR typ_cur_ZSUBCOVDTLS_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_ZSUBCOVDTLS_data(idx).STG_ZSEQNO IS NULL OR  typ_cur_ZSUBCOVDTLS_data(idx).STG_MBRNO IS NULL OR  typ_cur_ZSUBCOVDTLS_data(idx).STG_PRODTYP01  IS NULL  OR  typ_cur_ZSUBCOVDTLS_data(idx).STG_PRODTYP02 IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_POLHIST_ZSUBCOV_PRODTYP02;
+                lv_src_val      := lv_record_key;
+                lv_stg_val      := lv_record_key_stg;
+                lv_ig_val       := lv_record_key_vm1dta;
+
+			-- EFFDATE mismatch
+              ELSIF (  ( NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_EFFDATE,'0') <> NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_EFFDATE,'0') )
+                OR   ( NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_EFFDATE,'0') <> NVL(typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_EFFDATE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_POLHIST_ZSUBCOV_EFFDATE;
+                lv_src_val      := typ_cur_ZSUBCOVDTLS_data(idx).SRC_EFFDATE;
+                lv_stg_val      := typ_cur_ZSUBCOVDTLS_data(idx).STG_EFFDATE;
+                lv_ig_val       := typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_EFFDATE;
+
+           -- DPREM mismatch
+              ELSIF (  ( NVL(typ_cur_ZSUBCOVDTLS_data(idx).SRC_DPREM,'0') <> NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_DPREM,'0') )
+                OR   ( NVL(typ_cur_ZSUBCOVDTLS_data(idx).STG_DPREM,'0') <> NVL(typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_DPREM,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_POLHIST_ZSUBCOV_DPREM;
+                lv_src_val      := typ_cur_ZSUBCOVDTLS_data(idx).SRC_DPREM;
+                lv_stg_val      := typ_cur_ZSUBCOVDTLS_data(idx).STG_DPREM;
+                lv_ig_val       := typ_cur_ZSUBCOVDTLS_data(idx).ZSUBCOVDTLS_DPREM;
+
+
+			END IF;
+
+			 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+
+    CLOSE cur_ZSUBCOVDTLS;
+
+
+END;
+
+
+--------------------------------------------------------------------------------
+------------------- GXHI : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_GXHI;
+        FETCH cur_GXHI BULK COLLECT INTO typ_cur_GXHI_data LIMIT cur_limit;
+        FOR idx IN typ_cur_GXHI_data.FIRST .. typ_cur_GXHI_data.LAST
+        LOOP
+            lv_err_cnt := 0;
+		
+			lv_chdrnum :=  typ_cur_GXHI_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_GXHI_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_GXHI_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_GXHI_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_GXHI_data(idx).SRC_EFFDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+            
+			lv_record_key        := (NVL(typ_cur_GXHI_data(idx).SRC_CHDRNUM, '') || '-' || NVL(typ_cur_GXHI_data(idx).SRC_ZSEQNO, '') || '-'|| NVL(typ_cur_GXHI_data(idx).SRC_MBRNO, '') 
+									|| '-' || NVL(typ_cur_GXHI_data(idx).SRC_DPNTNO, '') || '-' || NVL(typ_cur_GXHI_data(idx).SRC_PRODTYP, '')   );
+            lv_record_key_stg    :=(NVL(typ_cur_GXHI_data(idx).STG_CHDRNUM, '') || '-' || NVL(typ_cur_GXHI_data(idx).STG_ZSEQNO, '') || '-'|| NVL(typ_cur_GXHI_data(idx).STG_MBRNO, '') 
+									|| '-' || NVL(typ_cur_GXHI_data(idx).STG_DPNTNO, '') || '-' || NVL(typ_cur_GXHI_data(idx).STG_PRODTYP, '')   );
+            lv_record_key_vm1dta := (NVL(typ_cur_GXHI_data(idx).GXHI_CHDRNUM, '') || '-' || NVL(typ_cur_GXHI_data(idx).GXHI_TRANNO, '') || '-'|| NVL(typ_cur_GXHI_data(idx).GXHI_MBRNO, '') 
+									|| '-' || NVL(typ_cur_GXHI_data(idx).GXHI_DPNTNO, '') || '-' || NVL(typ_cur_GXHI_data(idx).GXHI_PRODTYP, '')   );
+			
+			
+
+             -- POLICY - TRANO - MBRNO - DPNTNO  - PROD- NOT FOUNT
+            IF ( typ_cur_GXHI_data(idx).GXHI_CHDRNUM IS NULL OR  typ_cur_GXHI_data(idx).GXHI_TRANNO IS NULL OR  typ_cur_GXHI_data(idx).GXHI_MBRNO IS NULL  OR  typ_cur_GXHI_data(idx).GXHI_PRODTYP IS NULL
+                OR typ_cur_GXHI_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_GXHI_data(idx).STG_ZSEQNO IS NULL OR  typ_cur_GXHI_data(idx).STG_MBRNO IS NULL OR  typ_cur_GXHI_data(idx).STG_PRODTYP  IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_GXHI_PRODTYP;
+                lv_src_val      := lv_record_key;
+                lv_stg_val      := lv_record_key_stg;
+                lv_ig_val       := lv_record_key_vm1dta;
+
+			-- EFFDATE mismatch
+              ELSIF (  ( NVL(typ_cur_GXHI_data(idx).SRC_EFFDATE,'0') <> NVL(typ_cur_GXHI_data(idx).STG_EFFDATE,'0') )
+                OR   ( NVL(typ_cur_GXHI_data(idx).STG_EFFDATE,'0') <> NVL(typ_cur_GXHI_data(idx).GXHI_EFFDATE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_GXHI_EFFDATE;
+                lv_src_val      := typ_cur_GXHI_data(idx).SRC_EFFDATE;
+                lv_stg_val      := typ_cur_GXHI_data(idx).STG_EFFDATE;
+                lv_ig_val       := typ_cur_GXHI_data(idx).GXHI_EFFDATE;
+
+
+			-- SUMINSU mismatch
+              ELSIF (  ( NVL(typ_cur_GXHI_data(idx).SRC_SUMINSU,'0') <> NVL(typ_cur_GXHI_data(idx).STG_SUMINSU,'0') )
+                OR   ( NVL(typ_cur_GXHI_data(idx).STG_SUMINSU,'0') <> NVL(typ_cur_GXHI_data(idx).GXHI_SUMINSU,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_GXHI_SUMINSU;
+                lv_src_val      := typ_cur_GXHI_data(idx).SRC_SUMINSU;
+                lv_stg_val      := typ_cur_GXHI_data(idx).STG_SUMINSU;
+                lv_ig_val       := typ_cur_GXHI_data(idx).GXHI_SUMINSU;
+
+
+
+            -- ZINSTYPE mismatch
+              ELSIF (  ( NVL(typ_cur_GXHI_data(idx).SRC_ZINSTYPE,'0') <> NVL(typ_cur_GXHI_data(idx).STG_ZINSTYPE,'0') )
+                OR   ( NVL(typ_cur_GXHI_data(idx).STG_ZINSTYPE,'0') <> NVL(typ_cur_GXHI_data(idx).GXHI_ZINSTYPE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_GXHI_ZINSTYPE;
+                lv_src_val      := typ_cur_GXHI_data(idx).SRC_ZINSTYPE;
+                lv_stg_val      := typ_cur_GXHI_data(idx).STG_ZINSTYPE;
+                lv_ig_val       := typ_cur_GXHI_data(idx).GXHI_ZINSTYPE;
+
+			  -- ZTAXFLG mismatch
+              ELSIF (  ( NVL(typ_cur_GXHI_data(idx).SRC_ZTAXFLG,'0') <> NVL(typ_cur_GXHI_data(idx).STG_ZTAXFLG,'0') )
+                OR   ( NVL(typ_cur_GXHI_data(idx).STG_ZTAXFLG,'0') <> NVL(typ_cur_GXHI_data(idx).GXHI_ZTAXFLG,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_GXHI_ZTAXFLG;
+                lv_src_val      := typ_cur_GXHI_data(idx).SRC_ZTAXFLG;
+                lv_stg_val      := typ_cur_GXHI_data(idx).STG_ZTAXFLG;
+                lv_ig_val       := typ_cur_GXHI_data(idx).GXHI_ZTAXFLG;
+
+			END IF;
+
+			 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+
+    CLOSE cur_GXHI;
+
+
+END;
+
+
+--------------------------------------------------------------------------------
+------------------- ZODMPRMVER : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_ZODMPRMVER;
+        FETCH cur_ZODMPRMVER BULK COLLECT INTO typ_cur_ZODMPRMVER_data LIMIT cur_limit;
+        FOR idx IN typ_cur_ZODMPRMVER_data.FIRST .. typ_cur_ZODMPRMVER_data.LAST
+        LOOP
+            lv_err_cnt := 0;
+		
+			lv_chdrnum :=  typ_cur_ZODMPRMVER_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_ZODMPRMVER_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_ZODMPRMVER_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_ZODMPRMVER_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := typ_cur_ZODMPRMVER_data(idx).SRC_CCDATE;
+            lv_eff_desc := 'Transaction EFF Date';
+            
+			lv_record_key        := (NVL(typ_cur_ZODMPRMVER_data(idx).SRC_CHDRNUM, '') || '-' || NVL(typ_cur_ZODMPRMVER_data(idx).SRC_ZSEQNO, '') || '-'|| NVL(typ_cur_ZODMPRMVER_data(idx).SRC_CCDATE, '') 
+										|| '-' || NVL(typ_cur_ZODMPRMVER_data(idx).SRC_ZINSTYPE, '') );
+									
+            lv_record_key_stg    :=(NVL(typ_cur_ZODMPRMVER_data(idx).STG_CHDRNUM, '') || '-' || NVL(typ_cur_ZODMPRMVER_data(idx).STG_ZSEQNO, '') || '-'|| NVL(typ_cur_ZODMPRMVER_data(idx).STG_CCDATE, '') 
+										|| '-' || NVL(typ_cur_ZODMPRMVER_data(idx).STG_ZINSTYPE, '')  ) ;
+									
+            lv_record_key_vm1dta := (NVL(typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_CHDRNUM, '') || '-' || NVL(typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_ZINSTYPE, '') || '-'|| NVL(typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_CCDATE, '') 
+										|| '-' || NVL(typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_ZINSTYPE, '')   );
+									
+             -- POLICY - ZSEQNO - CCDATE - ZINSTYPE  : NOT FOUNT
+            IF ( typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_CHDRNUM IS NULL  OR  typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_ZINSTYPE IS NULL OR  typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_CCDATE IS NULL
+                OR typ_cur_ZODMPRMVER_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_ZODMPRMVER_data(idx).STG_ZSEQNO IS NULL OR  typ_cur_ZODMPRMVER_data(idx).STG_CCDATE IS NULL OR  typ_cur_ZODMPRMVER_data(idx).STG_ZINSTYPE  IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZODMPRMVER_ZINSTYPE;
+                lv_src_val      := lv_record_key;
+                lv_stg_val      := typ_cur_ZODMPRMVER_data(idx).STG_ZINSTYPE;
+                lv_ig_val       := typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_ZINSTYPE;
+
+			-- ZINSTYPE mismatch
+              ELSIF (  ( NVL(typ_cur_ZODMPRMVER_data(idx).SRC_ZINSTYPE,'0') <> NVL(typ_cur_ZODMPRMVER_data(idx).STG_ZINSTYPE,'0') )
+                OR   ( NVL(typ_cur_ZODMPRMVER_data(idx).STG_ZINSTYPE,'0') <> NVL(typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_ZINSTYPE,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZODMPRMVER_ZINSTYPE;
+                lv_src_val      := typ_cur_ZODMPRMVER_data(idx).SRC_ZINSTYPE;
+                lv_stg_val      := typ_cur_ZODMPRMVER_data(idx).STG_ZINSTYPE;
+                lv_ig_val       := typ_cur_ZODMPRMVER_data(idx).ZODMPRMVER_ZINSTYPE;
+
+			END IF;
+
+			 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+
+    CLOSE cur_ZODMPRMVER;
+
+
+END;
+
+
+--------------------------------------------------------------------------------
+------------------- ZAPIRNO : START----------------------------------------
+BEGIN
+   NULL;
+     OPEN cur_ZAPIRNO;
+        FETCH cur_ZAPIRNO BULK COLLECT INTO typ_cur_ZAPIRNO_data LIMIT cur_limit;
+        FOR idx IN typ_cur_ZAPIRNO_data.FIRST .. typ_cur_ZAPIRNO_data.LAST
+        LOOP
+            lv_chdrnum :=  typ_cur_ZAPIRNO_data(idx).SRC_CHDRNUM;
+            lv_err_cnt := 0;
+			lv_record_key := (lv_chdrnum || '-' || typ_cur_ZAPIRNO_data(idx).SRC_MBRNO || '-'|| typ_cur_ZAPIRNO_data(idx).SRC_ZINSTYPE  );
+			
+			lv_chdrnum :=  typ_cur_ZAPIRNO_data(idx).SRC_CHDRNUM;
+            lv_prod_cde :=  typ_cur_ZAPIRNO_data(idx).POL_V_PRD_CDE;
+            lv_pol_commdt :=  typ_cur_ZAPIRNO_data(idx).POL_D_POL_START_DT;
+            lv_pol_status := typ_cur_ZAPIRNO_data(idx).POL_V_POL_STATUS;
+            lv_eff_date := null;
+            lv_eff_desc := '';
+            
+			lv_record_key        := (NVL(typ_cur_ZAPIRNO_data(idx).SRC_CHDRNUM, '') || '-' || NVL(typ_cur_ZAPIRNO_data(idx).SRC_MBRNO, '') || '-'|| NVL(typ_cur_ZAPIRNO_data(idx).SRC_ZINSTYPE, '')  );
+									
+            lv_record_key_stg    :=(NVL(typ_cur_ZAPIRNO_data(idx).STG_CHDRNUM, '') || '-' || NVL(typ_cur_ZAPIRNO_data(idx).STG_MBRNO, '') || '-'|| NVL(typ_cur_ZAPIRNO_data(idx).STG_ZINSTYPE, '')  );
+																			
+            lv_record_key_vm1dta := (NVL(typ_cur_ZAPIRNO_data(idx).ZAPIRNO_CHDRNUM, '') || '-' || NVL(typ_cur_ZAPIRNO_data(idx).ZAPIRNO_MBRNO , '') || '-'|| NVL(typ_cur_ZAPIRNO_data(idx).ZAPIRNO_ZINSTYPE, '')  );
+												
+
+             -- POLICY - MBRNO - ZINSTYPE  : NOT FOUNT
+            IF ( typ_cur_ZAPIRNO_data(idx).ZAPIRNO_CHDRNUM IS NULL  OR  typ_cur_ZAPIRNO_data(idx).ZAPIRNO_ZINSTYPE IS NULL OR  typ_cur_ZAPIRNO_data(idx).ZAPIRNO_ZAPIRNO IS NULL
+                OR typ_cur_ZAPIRNO_data(idx).STG_CHDRNUM IS NULL OR  typ_cur_ZAPIRNO_data(idx).STG_MBRNO IS NULL OR  typ_cur_ZAPIRNO_data(idx).STG_ZINSTYPE IS NULL
+            ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZAPIRNO_ZINSTYPE;
+                lv_src_val      := lv_record_key;
+                lv_stg_val      := lv_record_key_stg;
+                lv_ig_val       := lv_record_key_vm1dta;
+
+			-- ZINSTYPE mismatch
+              ELSIF (  ( NVL(typ_cur_ZAPIRNO_data(idx).SRC_ZAPIRNO,'0') <> NVL(typ_cur_ZAPIRNO_data(idx).STG_ZAPIRNO,'0') )
+                OR   ( NVL(typ_cur_ZAPIRNO_data(idx).STG_ZAPIRNO,'0') <> NVL(typ_cur_ZAPIRNO_data(idx).ZAPIRNO_ZAPIRNO,'0') )
+             ) THEN
+                lv_err_cnt      := 1;
+                lv_attrib_name  := lv_polhist_ZAPIRNO_ZAPIRNO;
+                lv_src_val      := typ_cur_ZAPIRNO_data(idx).SRC_ZAPIRNO;
+                lv_stg_val      := typ_cur_ZAPIRNO_data(idx).STG_ZAPIRNO;
+                lv_ig_val       := typ_cur_ZAPIRNO_data(idx).ZAPIRNO_ZAPIRNO;
+
+			END IF;
+
+			 IF lv_err_cnt > 0 THEN
+                    insert into dm_pol_mihis_recon_det
+                    (
+                        v_batch_id, v_module_name, v_summary_batch_id, d_created_on, v_created_by, v_job_name
+                        , v_policy_no
+                        , v_prod_cde,  v_pol_commdt,  v_pol_status
+                        , v_eff_date, v_eff_desc
+                        , V_ATTRIB_NAME
+                        , v_src_val
+                        , v_stg_val
+                        , v_ig_val
+                    )
+                    values
+                    (
+                        lv_batch_id, lv_mod_name, lv_summary_batch_id, sysdate, v_crtd_by, v_prog_name
+                        , lv_chdrnum
+                        , lv_prod_cde, lv_pol_commdt, lv_pol_status
+                        , lv_eff_date, lv_eff_desc
+                        , lv_attrib_name
+                        , lv_src_val
+                        , lv_stg_val
+                        , lv_ig_val
+                      );
+
+            END IF;
+
+		END LOOP;
+
+        COMMIT;
+
+    CLOSE cur_ZAPIRNO;
+
+
+END;
+  -- recon set 2: record wise : END : 20210315
+/*
+  OPEN main_cur;
+    LOOP
+        FETCH main_cur BULK COLLECT INTO mcur_data LIMIT cur_limit;
+        FOR mcur_indx IN 1..mcur_data.COUNT LOOP
+            
+            v_chdrnum       := mcur_data(mcur_indx).v_policy_no;
+            
+            obj_recon_tbl.V_MODULE_NAME         := v_module_name;
+            obj_recon_tbl.V_POLICY_NO           := v_chdrnum;
+            obj_recon_tbl.V_POL_STATUS          := mcur_data(mcur_indx).v_pol_status;
+            obj_recon_tbl.V_PROD_CDE            := mcur_data(mcur_indx).v_prd_cde;
+            obj_recon_tbl.V_POL_COMMDT          := mcur_data(mcur_indx).d_pol_start_dt;
+            obj_recon_tbl.V_JOB_NAME            := v_prog_name;
+            obj_recon_tbl.V_BATCH_ID            := p_detail_batch_id;
+            obj_recon_tbl.V_SUMMARY_BATCH_ID    := p_summary_batch_id;
+            obj_recon_tbl.V_CREATED_BY          := v_crtd_by;
+            obj_recon_tbl.D_CREATED_ON          := SYSDATE;
+           
+            --Start: Attrib1- POLICY_TRANSACTION_COUNT--
+            BEGIN
+                SELECT 
+                    (SELECT COUNT(distinct p.apcucd) FROM zmrap00@DMSTGUSR2DBLINK p 
+                        INNER JOIN persnl_clnt_flg@DMSTGUSR2DBLINK   flg ON flg.apcucd = p.apcucd AND flg.isa4st IS NOT NULL
+                        INNER JOIN zmris00@DMSTGUSR2DBLINK           ris ON ris.iscicd = flg.iscicd
+                    WHERE SUBSTR(p.apcucd, 1, 8) = v_chdrnum) AS src_val,
+                    (SELECT count(distinct ZSEQNO) FROM TITDMGPOLTRNH@DMSTGUSR2DBLINK WHERE chdrnum = v_chdrnum) AS stg_val,
+                    (SELECT COUNT(*) FROM Jd1dta.ztrapf WHERE chdrnum =  v_chdrnum AND jobnm = 'G1ZDPOLHST') AS ig_val
+                INTO v_src_val, v_stg_val, v_ig_val
+                FROM DUAL;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                    v_err_code := SQLCODE;
+                    v_err_msg  := 'No Data found for POL: ' || v_chdrnum;
+                    insert_error_log(v_err_code, v_err_msg, v_prog_name);
+            END;
+           
+            IF (v_stg_val <> NVL(v_ig_val, 'XX')) OR  (v_src_val <> v_stg_val) OR (NVL(v_ig_val, 'XX') <> v_stg_val) THEN
+               obj_recon_tbl.V_ATTRIB_NAME  := 'POLICY_TRANSACTION_COUNT';
+               obj_recon_tbl.V_EFF_DESC     := 'Policy Start Date';
+               obj_recon_tbl.V_SRC_VAL      := v_src_val;
+               obj_recon_tbl.V_STG_VAL      := v_stg_val;
+               obj_recon_tbl.V_IG_VAL       := v_ig_val;
+               obj_recon_tbl.V_EFF_DATE     := mcur_data(mcur_indx).d_pol_start_dt;
+               
+               INSERT INTO Jd1dta.view_dm_pol_mihis_recon_det VALUES obj_recon_tbl;  
+             END IF;
+             --End: Attrib1- POLICY_TRANSACTION_COUNT--
+          
+                        
+            --Start: Attrib3- POLICY_INSURED_COUNT--
+            BEGIN
+                SELECT 
+                    (SELECT COUNT(DISTINCT substr(ris.iscicd, - 2) || '-' || substr(flg.insur_role, - 1)) FROM zmrap00@DMSTGUSR2DBLINK p 
+                        INNER JOIN persnl_clnt_flg@DMSTGUSR2DBLINK   flg ON flg.apcucd = p.apcucd AND flg.isa4st IS NOT NULL
+                        INNER JOIN zmris00@DMSTGUSR2DBLINK           ris ON ris.iscicd = flg.iscicd
+                    WHERE SUBSTR(p.apcucd, 1, 8) = v_chdrnum) AS src_val,
+                    (SELECT COUNT(DISTINCT  mbrno || '-' || zinsrole) FROM titdmgpoltrnh@dmstagedblink WHERE chdrnum = v_chdrnum) AS stg_val,
+                    (SELECT COUNT(DISTINCT  mbrno || '-' || zinsrole) FROM Jd1dta.zinsdtlspf WHERE chdrnum =  v_chdrnum AND jobnm = 'G1ZDPOLHST') AS ig_val
+                INTO v_src_val, v_stg_val, v_ig_val
+                FROM DUAL;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                    v_err_code := SQLCODE;
+                    v_err_msg  := 'No Data found for POL: ' || v_chdrnum;
+                    insert_error_log(v_err_code, v_err_msg, v_prog_name);
+            END;
+           
+            IF (v_stg_val <> NVL(v_ig_val, 'XX')) OR  (v_src_val <> v_stg_val) OR (NVL(v_ig_val, 'XX') <> v_stg_val) THEN
+               obj_recon_tbl.V_ATTRIB_NAME  := 'POLICY_INSURED_COUNT';
+               obj_recon_tbl.V_EFF_DESC     := 'Policy Start Date';
+               obj_recon_tbl.V_SRC_VAL      := v_src_val;
+               obj_recon_tbl.V_STG_VAL      := v_stg_val;
+               obj_recon_tbl.V_IG_VAL       := v_ig_val;
+               obj_recon_tbl.V_EFF_DATE     := mcur_data(mcur_indx).d_pol_start_dt;
+               
+               INSERT INTO Jd1dta.view_dm_pol_mihis_recon_det VALUES obj_recon_tbl;  
+             END IF;
+             --End: Attrib3- POLICY_INSURED_COUNT--   
+             
+            --Start: Attrib7- POLICY_RIDER_CNT--
+            BEGIN
+                SELECT 
+                    (SELECT COUNT(DISTINCT ppf.prodtyp) FROM  zmrap00@dmstgusr2dblink p
+                        LEFT OUTER JOIN zmric00@dmstgusr2dblink              ric ON substr(p.apcucd, 1, 8) = substr(ric.iccucd, 1, 8)
+                        LEFT OUTER JOIN spplanconvertion@dmstgusr2dblink     spp ON spp.oldzsalplan = p.apc2cd
+                        LEFT OUTER JOIN stagedbusr.zslppf@dmstgusr2dblink    ppf ON ppf.zsalplan = spp.newzsalplan
+                    WHERE ppf.zcovrid = 'R' AND SUBSTR(p.apcucd,1,8) = v_chdrnum) as src_val,                   
+                    (SELECT COUNT(DISTINCT PRODTYP) FROM titdmgmbrindp2@dmstagedblink WHERE refnum = v_chdrnum AND SUBSTR(PRODTYP,2,1) <> 9) as stg_val,
+                    (SELECT COUNT(DISTINCT PRODTYP) FROM Jd1dta.gxhipf WHERE jobnm = 'G1ZDPOLCOV' AND SUBSTR(PRODTYP,2,1) <> 9 AND chdrnum = v_chdrnum) as ig_val
+                INTO v_src_val, v_stg_val, v_ig_val
+                FROM DUAL;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                    v_err_code := SQLCODE;
+                    v_err_msg  := 'No Data found for POL: ' || v_chdrnum;
+                    insert_error_log(v_err_code, v_err_msg, v_prog_name);
+            END;
+           
+            IF (v_stg_val <> NVL(v_ig_val, 'XX')) OR  (v_src_val <> v_stg_val) OR (NVL(v_ig_val, 'XX') <> v_stg_val) THEN
+               obj_recon_tbl.V_ATTRIB_NAME  := 'POLICY_RIDER_CNT';
+               obj_recon_tbl.V_EFF_DESC     := 'Policy Start Date';
+               obj_recon_tbl.V_SRC_VAL      := v_src_val;
+               obj_recon_tbl.V_STG_VAL      := v_stg_val;
+               obj_recon_tbl.V_IG_VAL       := v_ig_val;
+               obj_recon_tbl.V_EFF_DATE     := mcur_data(mcur_indx).d_pol_start_dt;
+               
+               INSERT INTO Jd1dta.view_dm_pol_mihis_recon_det VALUES obj_recon_tbl;  
+             END IF;
+             --End: Attrib7- POLICY_RIDER_CNT--
+
+            --Start: Attrib8- POLICY_RISK_NUM--
+            BEGIN
+                SELECT 
+                    (SELECT count(*) FROM titdmgapirno@dmstgusr2dblink WHERE chdrnum = v_chdrnum) as src_val,
+                    (SELECT count(*) FROM titdmgapirno@dmstagedblink WHERE chdrnum = v_chdrnum) as stg_val,
+                    (SELECT count(*) FROM Jd1dta.zapirnopf WHERE jobnm = 'G1ZDAPIRNO' AND chdrnum = v_chdrnum) as ig_val
+                INTO v_src_val, v_stg_val, v_ig_val
+                FROM DUAL;
+            EXCEPTION
+                WHEN NO_DATA_FOUND THEN
+                    v_err_code := SQLCODE;
+                    v_err_msg  := 'No Data found for POL: ' || v_chdrnum;
+                    insert_error_log(v_err_code, v_err_msg, v_prog_name);
+            END;
+           
+            IF (v_stg_val <> NVL(v_ig_val, 'XX')) OR  (v_src_val <> v_stg_val) OR (NVL(v_ig_val, 'XX') <> v_stg_val) THEN
+               obj_recon_tbl.V_ATTRIB_NAME  := 'POLICY_RISK_NUM';
+               obj_recon_tbl.V_EFF_DESC     := 'Policy Start Date';
+               obj_recon_tbl.V_SRC_VAL      := v_src_val;
+               obj_recon_tbl.V_STG_VAL      := v_stg_val;
+               obj_recon_tbl.V_IG_VAL       := v_ig_val;
+               obj_recon_tbl.V_EFF_DATE     := mcur_data(mcur_indx).d_pol_start_dt;
+               
+               INSERT INTO Jd1dta.view_dm_pol_mihis_recon_det VALUES obj_recon_tbl;  
+             END IF;
+             --End: Attrib8- POLICY_RISK_NUM--          
+             
+        END LOOP;
+        EXIT WHEN main_cur%NOTFOUND;
+        COMMIT;
+    END LOOP;
+    COMMIT;
+    CLOSE main_cur;
+*/ 
+
+
+
+EXCEPTION
+    WHEN OTHERS THEN
+        v_err_code := SQLCODE;
+        v_err_msg  := SQLERRM;
+
+        insert_error_log(v_err_code, v_err_msg, v_prog_name);
+        dbms_output.put_line(v_err_code || ' - ' || v_err_msg);
+END DM_POLHIST_RECON_SET2;

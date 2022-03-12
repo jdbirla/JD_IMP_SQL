@@ -1,0 +1,14 @@
+*************************************************************************
+**********************Pre-Validation Stats:******************************
+*************************************************************************
+
+
+******************Pre-Validation Stats: : START *************************
+Schedule Name   :G1ZDPERCLT
+Schedule Number :0018
+Stage Table Name:'TITDMGCLTRNHIS'
+Error Count     :4
+Success Count   :18
+Total Count     :22
+******************Pre-Validation Stats: : END ****************************
+

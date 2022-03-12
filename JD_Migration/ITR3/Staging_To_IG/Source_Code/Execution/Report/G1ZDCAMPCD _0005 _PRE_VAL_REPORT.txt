@@ -1,0 +1,14 @@
+*************************************************************************
+**********************Pre-Validation Stats:******************************
+*************************************************************************
+
+
+******************Pre-Validation Stats: : START *************************
+Schedule Name   :G1ZDCAMPCD
+Schedule Number :5
+Stage Table Name:'TITDMGCAMPCDE'
+Error Count     :20
+Success Count   :0
+Total Count     :20
+******************Pre-Validation Stats: : END ****************************
+

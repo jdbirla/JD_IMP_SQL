@@ -1,0 +1,23 @@
+*************************************************************************
+**********************Batch Monitorring Report***************************
+*************************************************************************
+
+
+******************Batch Monitoring : START ******************************
+ BATCH_NAME :G1ZDPERCLT
+ JOB_NUM    :0018
+ START_TIME :3011217
+ END_TIME   :3011539
+ TOTAL_TIME :3.22
+ ZPRVALDYN  :N
+ SCHD_STATUS:90
+ USRPRF     :JBIRLA
+ REMARKS    :Personal client  Testing by sql
+******************Batch Monitoring : END *******************************
+
+
+******************Ora Error : START ************************************
+No Ora error
+******************Ora Error : END **************************************
+
+

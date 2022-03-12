@@ -1,0 +1,18 @@
+--------------------------------------------------------------------------------------------------------
+--DATA MIGRATION SCRIPT FOR SQL LOADER TO LOAD DATA INTO SATGE 1 TABLE FROM CSV FILE
+--CODE DEVELOPED BY jdc
+--DATE 27 JAN 2021
+--VERSION 0.1
+--THIS IS THE SQL LOADER CONTROL FILE
+--THE FOLLOWING SCRIPT LOADS THE DATA INTO RENEW_AS_IS TABLE FROM CSV FILE
+--------------------------------------------------------------------------------------------------------
+LOAD DATA
+CHARACTERSET JA16SJIS
+REPLACE INTO TABLE RENEW_AS_IS
+FIELDS TERMINATED BY ","
+OPTIONALLY ENCLOSED BY '"'
+TRAILING NULLCOLS
+(APCUCD,
+ICICD
+)
+

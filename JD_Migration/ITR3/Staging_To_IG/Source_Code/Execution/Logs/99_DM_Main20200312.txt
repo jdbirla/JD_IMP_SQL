@@ -1,0 +1,41 @@
+********
+******** Migration start ********
+********
+SQL> SQL> SQL> set termout on
+SQL>
+SQL> ----Agency Calling
+SQL> @&CALL_MODULES_PATH.\G1ZDAGENCY_CALL.sql N;
+SQL> /*
+SQL>  PA Data Migration G1ZDAGENCY_CALL
+SQL>*/
+SQL>
+SQL> DEFINE SQL_LOG_PATH = "C:\D_Drive\Zurich_Product\PA_Data_Migration\integral-CustomerZurichJpnDM\Documentation\DataChange\Oracle\Phase-2\ITR3\Staging_To_IG\Source_Code\Execution\Logs"
+SQL> column log_date new_value log_date_text noprint
+SQL> select to_char(sysdate,'yyyymmdd') log_date from dual;
+
+
+1 row selected.
+
+SQL> column SCHEDULENAME new_value I_SCHEDULENAME noprint
+SQL> select 'G1ZDAGENCY' as SCHEDULENAME from dual;
+
+
+1 row selected.
+
+SQL> column schedulenumber new_value v_schedulenumber noprint
+SQL>
+SQL> SELECT
+  2     lpad(substr(table_name, 7, 4) + 1, 4, 0) as schedulenumber
+  3        FROM (SELECT table_name
+  4                FROM all_tables
+  5               WHERE owner = 'Jd1dta'
+  6                 AND table_name LIKE 'ZDOEAG%'
+  7               ORDER BY table_name DESC)
+  8       WHERE ROWNUM = 1;
+
+
+1 row selected.
+
+SQL>
+SQL> set head on
+SQL> set echo off

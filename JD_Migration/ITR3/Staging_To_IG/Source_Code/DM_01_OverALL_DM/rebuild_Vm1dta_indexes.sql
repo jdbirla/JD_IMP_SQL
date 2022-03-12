@@ -1,0 +1,150 @@
+CREATE OR REPLACE EDITIONABLE PROCEDURE "Jd1dta"."REBUILD_VM1DTA_INDEXES" (
+    p_owner in varchar2 := 'Jd1dta',
+    p_table_name in varchar2
+) AUTHID CURRENT_USER AS
+
+ v_index_name VARCHAR2(100);
+ v_status VARCHAR2(100);
+ Begin
+ --select 'ALTER INDEX '||INDEX_NAME||' REBUILD PARALLEL NOLOGGING;' from user_indexes where status <> 'VALID';
+begin
+
+    for indexes_to_rebuild in
+    (
+        select index_name
+        from all_indexes
+        where owner = 'Jd1dta'
+            and table_name in ('DM_AUDIT_CLEXPF_BKP',
+'DM_AUDIT_CLNTPF_BKP',
+'DM_BILLINST_RECON_DET',
+'DM_CLEXPF_BKP',
+'DM_CLIENT_BANK_RECON_DET',
+'DM_CLNTPF_BKP',
+'DM_DATA_VALIDATION_ATTRIB',
+'DM_DV_RECON_DETAIL',
+'DM_DV_RECON_SUMMARY',
+'DM_MASTER_POL_RECON_DET',
+'DM_MEM_IND_RECON_DET',
+'DM_POL_BILLREF_RECON_DET',
+'DM_POL_COLLRES_RECON_DET',
+'DM_POL_DISHNR_RECON_DET',
+'DM_POL_MIHIS_RECON_DET',
+'DM_POL_RNWL_DET_RECON_DET',
+'DM_TEMP_POLHIST',
+'DM_ZCLNPF_BKP',
+'DM2_DMIG_DATA_CNT',
+'DMBARGSPF',
+'DMBERPF',
+'DMBMONPF',
+'DMDEFVALPF',
+'DMIGODMVERSIONHIS',
+'DMIGTITDMGAGENTPJ',
+'DMIGTITDMGAPIRNO',
+'DMIGTITDMGBILL1',
+'DMIGTITDMGBILL2',
+'DMIGTITDMGCLNTBANK',
+'DMIGTITDMGCLNTCORP',
+'DMIGTITDMGCLTRNHIS',
+'DMIGTITDMGCOLRES',
+'DMIGTITDMGLETTER',
+'DMIGTITDMGMASPOL',
+'DMIGTITDMGMBRINDP1',
+'DMIGTITDMGMBRINDP2',
+'DMIGTITDMGMBRINDP3',
+'DMIGTITDMGPOLTRNH',
+'DMIGTITDMGREF1',
+'DMIGTITDMGREF2',
+'DMIGTITDMGRNWDT1',
+'DMIGTITDMGRNWDT1_INT',
+'DMIGTITDMGRNWDT2',
+'DMIGTITDMGRNWDT2_INT',
+'DMIGTITNYCLT',
+'DMPANAYOSEVIEW',
+'DMPRFXPF',
+'DMPVALPF',
+'DMUNIQUENOUPDT',
+'IG_DM_MASTERPOL',
+'IG_TITDMGPOLTRNH',
+'PAZDMPPF',
+'ZDMBKPAUDCLNT',
+'ZDMBKPCLNT',
+'ZDMBKPZCLN',
+'ZDMBKPZINS',
+'ZDMBKPZTRA',
+'AGNTPF',
+'AGPLPF',
+'AUDIT_CLEXPF',
+'AUDIT_CLNT',
+'AUDIT_CLNTPF',
+'AUDIT_CLRRPF',
+'CLBAPF',
+'CLEXPF',
+'CLNTPF',
+'CLRRPF',
+'GBIDPF',
+'GBIHPF',
+'CHDRPF',
+'GCHIPF',
+'GCHPPF',
+'GMHDPF',
+'GMHIPF',
+'GPMDPF',
+'GXHIPF',
+'LETCPF',
+'VERSIONPF',
+'ZACRPF',
+'ZALTPF',
+'ZAPIRNOPF',
+'ZBENFDTLSPF',
+'ZCELINKPF',
+'ZCLEPF',
+'ZCLNPF',
+'ZCPNPF',
+'ZCRHPF',
+'ZCSLPF',
+'ZENCTPF',
+'ZINSDTLSPF',
+'ZMCIPF',
+'ZODMPRMVERPF',
+'ZREPPF',
+'ZRFDPF',
+'ZRNDTCOVPF',
+'ZRNDTDPF',
+'ZRNDTHPF',
+'ZRNDTSUBCOVPF',
+'ZRNWPERDPF',
+'ZSUBCOVDTLS',
+'ZTEMPCOVPF',
+'ZTGMPF',
+'ZTRAPF',
+'ZUCLPF' ) and status <> 'VALID'
+    ) loop
+
+      execute immediate 'alter index '|| 'Jd1dta.' 
+            ||indexes_to_rebuild.index_name||' rebuild PARALLEL NOLOGGING' ;
+    end loop;
+
+exception
+  WHEN OTHERS THEN
+         DBMS_OUTPUT.put_line('ERROR :');
+         
+END;
+
+begin
+for indexes_to_invalid in
+    (
+   SELECT  index_name,status 
+FROM   all_indexes
+WHERE owner = 'Jd1dta' and status != 'VALID')
+loop
+
+        DBMS_OUTPUT.put_line('Invalid satus :'|| indexes_to_invalid.index_name);
+    end loop;
+    exception
+  WHEN OTHERS THEN
+         DBMS_OUTPUT.put_line('ERROR in indexes_to_invalid :');
+end;
+
+end rebuild_Vm1dta_indexes;
+
+/

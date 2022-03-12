@@ -1,0 +1,18 @@
+*************************************************************************
+**********************Post-Validation Stats:*****************************
+*************************************************************************
+
+
+******************Post-Validation Stats: : Start ************************
+ Schedule Name   :G1ZDAGENCY
+ Schedule num    :96
+ Reference table :AGNTPF
+ Error count     :1
+ Reference table :ZACRPF
+ Error count     :1
+ Reference table :CLRRPF
+ Error count     :1
+ Reference table :AGPLPF
+ Error count     :1
+******************Post-Validation Stats: : END ************************
+

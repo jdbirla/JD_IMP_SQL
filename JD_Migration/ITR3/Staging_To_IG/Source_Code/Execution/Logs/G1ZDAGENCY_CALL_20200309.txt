@@ -1,0 +1,78 @@
+********
+******** Migration start ********
+********
+SQL> set termout on
+SQL>
+SQL>
+SQL> --step 0:Please check table DMBARGSPF(Data migration argument) it contains the arguments for each shcedule,
+SQL> ---      these argument must be configured before execution of pre-validation or migration
+SQL>
+SQL> --select * from DMBARGSPF where SCHEDULE_NAME='G1ZDMBRIND';
+SQL>
+SQL>
+SQL>
+SQL> --Step 1 Pre-validation and actual migration
+SQL> --Pre -validation : Please set I_ZPRVALDYN='Y' if you want to do only pre validation
+SQL> ---Actual Migration: Please set I_ZPRVALDYN='Y' if you want to do only pre validation
+SQL> --I_SCHEDULENAME : Schedule Name
+SQL> --I_REMARKS: We can set any remark like the first cycle for corporate client
+SQL>
+SQL>
+SQL>
+SQL> DECLARE
+  2    v_last_table_name VARCHAR2(10);
+  3    v_schedulenumber  VARCHAR2(10 CHAR);
+  4    I_SCHEDULENAME VARCHAR2(50 CHAR) := 'G1ZDAGENCY';
+  5    I_ZPRVALDYN VARCHAR2(1 Char):= 'Y';
+  6    I_REMARKS VARCHAR2(500 CHAR):= 'Agency Testing by sql';
+  7    BEGIN
+  8  BEGIN
+  9  SELECT table_name
+ 10        INTO v_last_table_name
+ 11        FROM (SELECT table_name
+ 12                FROM all_tables
+ 13               WHERE owner = 'Jd1dta'
+ 14                 AND table_name LIKE 'ZDOEAG%'
+ 15               ORDER BY table_name DESC)
+ 16       WHERE ROWNUM = 1;
+ 17  	   v_schedulenumber := lpad(substr(v_last_table_name, 7, 4) + 1, 4, 0);
+ 18
+ 19  END;
+ 20
+ 21
+ 22  BEGIN
+ 23
+ 24
+ 25  Jd1dta.DM2_MIGRATION_EXECUTION(i_schedulename => I_SCHEDULENAME,
+ 26  						  i_schedulenumber=>V_SCHEDULENUMBER,
+ 27                            i_zprvaldyn => I_ZPRVALDYN,
+ 28                            i_remarks => I_REMARKS);
+ 29  --rollback;
+ 30  END;
+ 31  END;
+ 32  /
+Start execution of DM2_MIGRATION_EXECUTION : G1ZDAGENCY
+Start execution of DM2_G1ZDAGENCY_PARALLEL_TASK
+Agency Procedure call :BEGIN  Jd1dta.BQ9S5_AG01_AGENCY('G1ZDAGENCY','0044','Y','1','JBIRLA','31',NULL,'',:start_id,:end_id);END;
+DM2_G1ZDAGENCY_PARALLEL_TASK completed! Status:7
+End execution of DM2_G1ZDAGENCY_PARALLEL_TASK
+End execution of DM2_MIGRATION_EXECUTION : G1ZDAGENCY
+
+
+PL/SQL procedure successfully completed.
+
+SQL> @DM2_BATCH_MONITOR.sql '&I_SCHEDULENAME' '&v_schedulenumber';
+SQL> /*
+SQL>  PA Data Migration Batch monitor
+SQL>*/
+SQL>
+SQL> DEFINE SQL_LOG_PATH = "C:\D_Drive\Zurich_Product\PA_Data_Migration\integral-CustomerZurichJpnDM\Documentation\DataChange\Oracle\Phase-2\ITR3\Staging_To_IG\Source_Code\Execution\Report"
+SQL> column log_date new_value log_date_text noprint
+SQL> select to_char(sysdate,'yyyymmdd') log_date from dual;
+
+
+1 row selected.
+
+SQL>
+SQL> set head off
+SQL> set echo off
