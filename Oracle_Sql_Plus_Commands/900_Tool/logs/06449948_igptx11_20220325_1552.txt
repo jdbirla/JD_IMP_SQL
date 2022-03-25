@@ -1,0 +1,44 @@
+
+Error starting at line : 54 File @ H:\SIT_STAGE_DATA\Phase-2\Mig_Guide\Sool_Practice\900_Tools\Dump_IG_Database\Dump_Member_Policy.sql
+In command -
+@@BUSD_Business_Date.sql
+Error report -
+SP2-0310: Unable to open file: "BUSD_Business_Date.sql"
+***
+************************************ Member Policy Information ************************************
+***
+====
+======= Member Policy summary ======================================================================
+====
+****************************************
+Policy Header GCHD ,GCHPPF and OWNER
+****************************************
+
+         Endorser Code                      OCC Date Contract Type Master Policy Prev Pol No Ownwer Client  Billed To Dt    Paid To Dt                           Pol Cancel Dt                    Plan Classifictn          PGP St Dt PGP Ed Dt Pol End Date Pol Term Dt Grp Classifictn                               Date Time
+CHDRNUM  ZENDCDE              STATCODE       OCCDATE CNTTYPE       MPLNUM        ZPRVCHDR    COWNNUM              BTDATE        PTDATE     TRANNO TRANID              EFFDCLDT   ZRWNLAGE ZPRDCTG ZPLANCLS         ZCOLMCLS  ZPGPFRDT  ZPGPTODT      ZPENDDT   ZPOLTDATE ZGPORIPCLS        ZNBMNAGE ZLAPTRX USRPRF     DATIME                           JOBNM
+-------- -------------------- -------- ------------- ------------- ------------- ----------- ------------- ------------- ------------- ---------- -------------- ------------- ---------- ------- ---------------- -------- --------- --------- ------------ ----------- --------------- ---------- ------- ---------- -------------------------------- ----------
+06449948 UCS                  IF            20151201 AA3           05010039      NULL        11097243           20210930      20210930         12 QPAD2111220511      99999999         75 PA      PP               C         99999999  99999999     20211130    99999999 G                       20 N       JBIRLA     22-11-21 5:01:51.000000000 PM    G1ZDMBRIND
+
+1 row selected.
+
+****************************************
+Policy Header History (GCHIPF)
+****************************************
+
+                             Policy St Dt Renweal Date            Pol Issue Dt                                                         Pol End Date Campaign Code           Ownwer Client                       Date Time
+CHDRNUM   EFFDATE     TRANNO       CCDATE       CRDATE INSENDTE       NRISDATE BILLFREQ TIMECH01 TIMECH02   DOCRCDTE ZAGPTNUM ZPSTDDT  ZPENDDT      ZCMPCODE      ZSOLCTFLG COWNNUM       USRPRF     JOBNM      DATIME
+-------- -------- ---------- ------------ ------------ ---------- ------------ -------- -------- -------- ---------- -------- -------- ------------ ------------- --------- ------------- ---------- ---------- --------------------------------
+06449948 20201201          2     20201201     20211130 20211201       99999999 12       16:00    16:00      20151101          20201201 20211130     K60600        N         11097243      JBIRLA     G1ZDMBRIND 22-11-21 5:01:51.000000000 PM
+
+1 row selected.
+
+********************************************************************************
+Member Policy Insured header GMHD and GMHI
+********************************************************************************
+
+                        Accm Cls Date                           Insured Age Insured Client                                                                                                     Date Time
+CHDRNUM  MBRNO DPNTNO   ZANNCLDT      GMHD_TRANNO   DTEATT TERM         AGE CLNTNUM        CLTRELN  EFFDATE   DTETRM GMHI_TRANNO ZTRXSTAT ZPLANCDE                       USRPRF     JOBNM      DATIME
+-------- ----- -------- ------------- ----------- -------- ---- ----------- -------------- ------- -------- -------- ----------- -------- ------------------------------ ---------- ---------- --------------------------------
+06449948 00001 00       20201019                2 20151201 QPAD          59 11097243       1       20201201 99999999           2 AP       D-AXXX-00198                   JBIRLA     G1ZDMBRIND 22-11-21 5:01:51.000000000 PM
+
+1 row selected.
