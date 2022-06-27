@@ -65,3 +65,22 @@ WHERE ProductID = ALL
   FROM OrderDetails
   WHERE Quantity = 10);
   ```
+  ## SQL SELECT INTO same as Create as table in oracle
+  ```sql
+  SELECT * INTO newtable
+FROM oldtable
+WHERE 1 = 0;
+```
+
+## SQL IFNULL(), ISNULL(), COALESCE(), and NVL() Functions
+
+```sql
+MySQL : IFNULL() ,COALESCE() 
+SQL Server: ISNULL() ,COALESCE() 
+Oracle:NVL(),COALESCE()
+```
+## Stored Procedure 
+```plsql
+```
+
+
