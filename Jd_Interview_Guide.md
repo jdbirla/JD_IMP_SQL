@@ -81,6 +81,18 @@ Oracle:NVL(),COALESCE()
 ```
 ## Stored Procedure 
 ```plsql
+DELIMITER //
+CREATE PROCEDURE stored_proc_tutorial.spGetMaxMarks(OUT highestMarks INT)
+BEGIN
+    SELECT MAX(total_marks) INTO highestMarks FROM studentMarks;
+END //
+DELIMITER
+ 
+-- calling procedure
+CALL stored_proc_tutorial.spGetMaxMarks(@highestMarks);
+ 
+-- obtaining value of the OUT parameter
+SELECT @highestMarks;
 ```
 
 
