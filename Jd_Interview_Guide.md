@@ -80,7 +80,7 @@ SQL Server: ISNULL() ,COALESCE()
 Oracle:NVL(),COALESCE()
 ```
 ## Stored Procedure 
-```plsql
+```sql
 DELIMITER //
 CREATE PROCEDURE stored_proc_tutorial.spGetMaxMarks(OUT highestMarks INT)
 BEGIN
