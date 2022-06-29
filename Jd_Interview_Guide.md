@@ -101,5 +101,34 @@ SQL injection is one of the most common web hacking techniques.
 
 SQL injection is the placement of malicious code in SQL statements, via web page input.
 
+---
+### ER Daigram
+for ER daigram creation : http://www.lucidchart.com
+![image](https://user-images.githubusercontent.com/69948118/176556252-c9270c49-0c4f-43be-8053-c560c1416ba6.png)
+![image](https://user-images.githubusercontent.com/69948118/176556358-e4178535-80ce-4fed-94c3-bffaa9eefd71.png)
+![image](https://user-images.githubusercontent.com/69948118/176556607-179bbefb-c40c-433d-b857-9186ac480dab.png)
+![image](https://user-images.githubusercontent.com/69948118/176556645-55367dab-1bcb-4d5f-9327-d0dff7ba9f0b.png)
+![image](https://user-images.githubusercontent.com/69948118/176556817-c26f7cba-ad4e-4187-a3ab-cc1b9ea2891e.png)
+![image](https://user-images.githubusercontent.com/69948118/176556856-f930415c-7d2f-4907-bf47-ba77de7f41b3.png)
+![image](https://user-images.githubusercontent.com/69948118/176556928-547a882b-faac-4c5a-a7a1-6c3ec22e6b0b.png)
+![image](https://user-images.githubusercontent.com/69948118/176556962-f75ecd94-2d34-42c5-96a9-2e15dca7180a.png)
+
+![image](https://user-images.githubusercontent.com/69948118/176557394-172f6e2c-9e14-4909-ab1c-f5c5cbf95e5e.png)
+
+![image](https://user-images.githubusercontent.com/69948118/176557496-5eb29da4-7e16-4b5d-bbb7-2d7339a9c558.png)
+![image](https://user-images.githubusercontent.com/69948118/176558175-e3cbae92-5a75-49d1-b732-54bc9ec669f9.png)
+![image](https://user-images.githubusercontent.com/69948118/176558245-bb0c412b-9050-41c1-8529-94ba40cc3b4a.png)
+
+![image](https://user-images.githubusercontent.com/69948118/176558214-ede2f0da-1530-4e79-9493-245a11c49f2a.png)
+
+![image](https://user-images.githubusercontent.com/69948118/176558527-8cd544b7-ab80-465a-bfab-4e0d46f729d7.png)
+
+- Export into DB scripts using lucid chart
+
+![image](https://user-images.githubusercontent.com/69948118/176558606-e5439941-9509-4fd4-a135-1f05f3e4e56e.png)
+
+- Import DB to create ER daigram using lucidchart
+![image](https://user-images.githubusercontent.com/69948118/176558729-13a3cc5f-1e1a-4dbd-a3e2-df7283ce0c8f.png)
+
 
 
