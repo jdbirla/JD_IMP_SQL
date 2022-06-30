@@ -130,5 +130,35 @@ for ER daigram creation : http://www.lucidchart.com
 - Import DB to create ER daigram using lucidchart
 ![image](https://user-images.githubusercontent.com/69948118/176558729-13a3cc5f-1e1a-4dbd-a3e2-df7283ce0c8f.png)
 
+---
+### Grouping SETS
+```sql
+SELECT
+    warehouse,
+    product, 
+    SUM (quantity) qty
+FROM
+    inventory
+GROUP BY
+    GROUPING SETS(
+        (warehouse,product),
+        (warehouse),
+        (product),
+        ()
+    );
+```
+![image](https://user-images.githubusercontent.com/69948118/176564235-e2bd039c-63a8-4934-8380-9093af4ebdab.png)
+
+![image](https://user-images.githubusercontent.com/69948118/176566119-6afc00fc-edb9-4b80-8252-a7cba938800f.png)
+
+![image](https://user-images.githubusercontent.com/69948118/176566336-dc473766-5246-41c7-abc0-982e29ddc917.png)
+
+### Window function https://www.sqltutorial.org/sql-window-functions/
+![image](https://user-images.githubusercontent.com/69948118/176566450-d267cf1c-d9f6-4ec4-906b-9382b7c04f66.png)
+![image](https://user-images.githubusercontent.com/69948118/176566528-10175cde-b046-4bda-9e17-e5eb93141999.png)
+![image](https://user-images.githubusercontent.com/69948118/176566812-42136470-a7ea-4b66-b66f-7f5dfeddb13f.png)
+
+
+
 
 
