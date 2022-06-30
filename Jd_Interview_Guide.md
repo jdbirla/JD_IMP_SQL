@@ -159,6 +159,12 @@ GROUP BY
 ![image](https://user-images.githubusercontent.com/69948118/176566812-42136470-a7ea-4b66-b66f-7f5dfeddb13f.png)
 
 
+---
+### PLSQL
+
+![image](https://user-images.githubusercontent.com/69948118/176572637-89ecfdbc-1c48-43fd-b737-22375072e782.png)
+
+![image](https://user-images.githubusercontent.com/69948118/176572858-a9894ed0-3876-4aab-b0f6-6ed08acb4f24.png)
 
 
 
